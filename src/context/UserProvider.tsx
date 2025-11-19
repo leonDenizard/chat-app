@@ -1,13 +1,17 @@
 import { createContext, useContext, useState } from "react";
 
 interface UserData{
+    id: string
     name: string;
+    avatar?: string | null;
+    joined_at: string;
+    last_seen: string;
 }
 
 interface UserContextProps{
 
     user: UserData | null;
-    setUser: (data: UserData) => void;
+    setUser: (data: UserData | null) => void;
 }
 
 const UserContext = createContext<UserContextProps | undefined>(undefined)

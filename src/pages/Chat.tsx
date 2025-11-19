@@ -1,27 +1,32 @@
 import { Input } from "@/components/ui/input";
-import UserQueue from "@/components/UserQueue/UserQueue";
+import UserChat from "@/components/UserChat/UserChat";
+import UserQueueList from "@/components/UserQueueList/UserQueueList";
 import { useUser } from "@/context/UserProvider";
 import { supabase } from "@/lib/supabse";
 import { Search } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Chat() {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
+  const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate()
 
   useEffect(() => {
-    if (!user?.name) return;
+    const id = new URLSearchParams(location.search).get("id");
+    if (!id || user) return;
+    
+    console.log("User conectado:", user);
 
-    const addToQueue = async () => {
-      await supabase.from("queue").insert({
-        name: user.name,
-      });
-    };
-
-    addToQueue();
+    supabase
+    .from("queue")
+    .select("*")
+    .eq("id", id)
+    .single()
+    .then(({ data }) => setUser(data));
 
     return () => {
-      // remover da fila quando sair da página / fechar aba
-      supabase.from("queue").delete().eq("name", user.name);
+      supabase.from("queue").delete().eq("id", user?.id);
     };
   }, [user]);
 
@@ -37,11 +42,13 @@ export default function Chat() {
         </header>
 
         {/* section users chat */}
-        <UserQueue />
+        <UserQueueList onSelectUser={setSelectedUser}/>
       </aside>
 
       {/* Principal Chat */}
-      <main className="flex-1 border border-red-300"></main>
+      <main className="flex-1 border border-red-300">
+        <UserChat user={user} selectedUser={selectedUser} setSelectedUser={setSelectedUser}/>
+      </main>
     </div>
   );
 }

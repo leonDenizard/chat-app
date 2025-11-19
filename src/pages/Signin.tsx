@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/context/UserProvider";
+import { supabase } from "@/lib/supabse";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -19,13 +20,21 @@ export default function Signin() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     
-    setUser({
-      name: data.name
-    })
+    const {data: inserted, error} = await supabase
+    .from("queue")
+    .insert({name: data.name})
+    .select()
+    .single()
 
-    navigate("/chat");
+    if(error){
+      console.log(error)
+      return
+    }
+    setUser(inserted)
+
+    navigate(`/chat?id=${inserted.id}`);
   };
 
   return (
