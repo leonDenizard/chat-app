@@ -1,4 +1,5 @@
 import { useUser } from "@/context/UserProvider";
+import useQueue from "@/hooks/useQueue";
 import { supabase } from "@/lib/supabse";
 import { useEffect, useState } from "react";
 
@@ -13,6 +14,7 @@ interface QueueUser {
 export default function UserQueueList({ onSelectUser }) {
   const [list, setList] = useState<QueueUser[]>([]);
   const { user } = useUser();
+
 
   useEffect(() => {
     //carrega a lista inicial

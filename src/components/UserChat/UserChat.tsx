@@ -1,50 +1,27 @@
+import useMessageRealTime from "@/hooks/useMessageRealTime";
+import { useMessageSupabase } from "@/hooks/useMessageSupabase";
 import { supabase } from "@/lib/supabse";
 import { useEffect, useState } from "react";
 
 export default function UserChat({ user, selectedUser, setSelectedUser }) {
   const [messages, setMessages] = useState([]);
 
-  // 1️⃣ Carregar mensagens da conversa atual
+  const { loadMessage } = useMessageSupabase()
+  const { creatChannel, autoOpen } = useMessageRealTime()
+
   useEffect(() => {
     if (!user || !selectedUser) return;
 
-    supabase
-      .from("messages")
-      .select("*")
-      .or(
-        `and(from_id.eq.${user.id},to_id.eq.${selectedUser.id}),and(from_id.eq.${selectedUser.id},to_id.eq.${user.id})`
-      )
-      .order("created_at", { ascending: true })
-      .then(({ data }) => setMessages(data || []));
+    loadMessage(user, selectedUser, setMessages)
+
   }, [user, selectedUser]);
 
 
-  // 2️⃣ Realtime da conversa atual (aparece sem reload)
   useEffect(() => {
     if (!user || !selectedUser) return;
 
-    const channel = supabase
-      .channel("messages-realtime")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
-          const msg = payload.new;
+    creatChannel(user, selectedUser, setMessages)
 
-          const isBetweenUsers =
-            (msg.from_id === user.id && msg.to_id === selectedUser.id) ||
-            (msg.from_id === selectedUser.id && msg.to_id === user.id);
-
-          if (isBetweenUsers) {
-            setMessages((prev) => [...prev, msg]);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [user, selectedUser]);
 
 
@@ -52,34 +29,8 @@ export default function UserChat({ user, selectedUser, setSelectedUser }) {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel("auto-open-chat")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        async (payload) => {
-          const msg = payload.new;
+    autoOpen(user, selectedUser, setSelectedUser);
 
-          // mensagem enviada PARA mim
-          if (msg.to_id === user.id) {
-            // se eu não estou com ele aberto, abre
-            if (!selectedUser || selectedUser.id !== msg.from_id) {
-              const { data } = await supabase
-                .from("queue")
-                .select("*")
-                .eq("id", msg.from_id)
-                .single();
-
-              setSelectedUser(data);
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [user, selectedUser]);
 
 

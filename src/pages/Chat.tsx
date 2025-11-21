@@ -2,32 +2,29 @@ import { Input } from "@/components/ui/input";
 import UserChat from "@/components/UserChat/UserChat";
 import UserQueueList from "@/components/UserQueueList/UserQueueList";
 import { useUser } from "@/context/UserProvider";
-import { supabase } from "@/lib/supabse";
+import { useUserSupabase } from "@/hooks/useUserSupabase";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function Chat() {
   const { user, setUser } = useUser();
   const [selectedUser, setSelectedUser] = useState(null);
-  const navigate = useNavigate()
+  
+  const { id } = useParams()
+
+  const { getUser, removeUser } = useUserSupabase()
 
   useEffect(() => {
-    const id = new URLSearchParams(location.search).get("id");
+    
     if (!id || user) return;
     
-    console.log("User conectado:", user);
-
-    supabase
-    .from("queue")
-    .select("*")
-    .eq("id", id)
-    .single()
-    .then(({ data }) => setUser(data));
+    getUser(id, setUser)
 
     return () => {
-      supabase.from("queue").delete().eq("id", user?.id);
-    };
+      if(user?.id) removeUser(id, user)
+    }
+
   }, [user]);
 
   return (

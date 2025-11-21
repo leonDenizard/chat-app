@@ -6,7 +6,6 @@ export default function UserQueue(){
     const[avatar, setAvatar] = useState("")
 
     const { user } = useUser()
-    console.log("USER VINDO DO CONTEXT",user)
 
     useEffect(() => {
         fetch("https://randomfox.ca/floof/").then(res => res.json()).then(data => setAvatar(data.image))
