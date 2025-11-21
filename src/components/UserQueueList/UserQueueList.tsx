@@ -14,7 +14,7 @@ interface QueueUser {
 export default function UserQueueList({ onSelectUser }) {
   const [list, setList] = useState<QueueUser[]>([]);
   const { user } = useUser();
-
+  const
 
   useEffect(() => {
     //carrega a lista inicial
