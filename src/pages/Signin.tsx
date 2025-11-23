@@ -60,13 +60,13 @@ export default function Signin() {
       <div className="z-10 w-full max-w-md mx-auto px-6">
         <div className="flex flex-col items-center space-y-6">
           <TextType
-            text={["Welcome to", "Your Next Chat", "Experience", "Powerd by React"]}
+            text={["Welcome to", "Your Next Chat", "Experience", "Powerd by React.js"]}
             typingSpeed={150}
             pauseDuration={1500}
             showCursor={true}
             cursorCharacter="_"
-            className="relative -top-4 2xl:-top-16 text-5xl font-bold text-center text-shadow-lg
-            font-sans-conde lg:w-7xl lg:text-7xl 2xl:text-8xl text-zinc-300"
+            className="relative lg:-top-4 2xl:-top-16 text-5xl font-bold text-center text-shadow-lg
+            font-sans-conde lg:w-7xl lg:text-7xl 2xl:text-8xl text-zinc-300 h-24 lg:h-auto"
           />
 
           <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
