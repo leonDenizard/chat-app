@@ -63,6 +63,7 @@ export function useUserSupabase(): UseUserSupabaseReturn {
       }
 
       const user = data as UserData;
+  
       setUser(user);
       return { user, error: null };
 

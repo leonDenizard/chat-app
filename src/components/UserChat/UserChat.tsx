@@ -1,8 +1,9 @@
 import useMessageRealTime from "@/hooks/useMessageRealTime";
 import { useMessageSupabase } from "@/hooks/useMessageSupabase";
+import { Mic, Paperclip, Send, SendHorizontal, Smile } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface UserData{
+interface UserData {
   id: string;
   name: string;
   avatar?: string | null;
@@ -26,8 +27,11 @@ interface UserChatProps {
   setSelectedUser: (user: UserData | null) => void;
 }
 
-
-export default function UserChat({ user, selectedUser, setSelectedUser }: UserChatProps) {
+export default function UserChat({
+  user,
+  selectedUser,
+  setSelectedUser,
+}: UserChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const { loadMessages, sendMessage } = useMessageSupabase();
@@ -37,20 +41,20 @@ export default function UserChat({ user, selectedUser, setSelectedUser }: UserCh
     const fetchMessages = async () => {
       if (!user || !selectedUser) return;
 
-      const {messages, error } = await loadMessages({
+      const { messages, error } = await loadMessages({
         fromUserId: user.id,
-        toUserId: selectedUser.id
+        toUserId: selectedUser.id,
       });
 
-      if(error){
-        console.log(error)
-        return
+      if (error) {
+        console.log(error);
+        return;
       }
 
-      setMessages(messages)
+      setMessages(messages);
     };
 
-    fetchMessages()
+    fetchMessages();
   }, [user?.id, selectedUser?.id]);
 
   useEffect(() => {
@@ -66,21 +70,19 @@ export default function UserChat({ user, selectedUser, setSelectedUser }: UserCh
     autoOpen(user, selectedUser, setSelectedUser);
   }, [user, selectedUser]);
 
-  const handleSendMessage = async(text: string) => {
-
+  const handleSendMessage = async (text: string) => {
     if (!text.trim() || !user || !selectedUser) return;
 
     const result = await sendMessage({
       text: text.trim(),
       fromUserId: user.id,
-      toUserId: selectedUser.id
-    })
+      toUserId: selectedUser.id,
+    });
 
-    if(result.error){
-      console.log("Erro ao enviar", result.error)
+    if (result.error) {
+      console.log("Erro ao enviar", result.error);
     }
-  }
-  
+  };
 
   return (
     <div className="flex flex-col h-full p-4">
@@ -102,15 +104,31 @@ export default function UserChat({ user, selectedUser, setSelectedUser }: UserCh
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const formData = new FormData(e.currentTarget)
-          const text = formData.get("message") as string
-          handleSendMessage(text)
+          const formData = new FormData(e.currentTarget);
+          const text = formData.get("message") as string;
+          handleSendMessage(text);
           e.currentTarget.reset();
         }}
-        className="flex gap-2 mt-2"
+        className="flex gap-2 mt-2 items-center"
       >
-        <input name="message" className="flex-1 p-2 bg-gray-800" />
-        <button className="bg-blue-600 px-4 rounded">Enviar</button>
+        
+          <Paperclip className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed"/>
+          <Smile className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
+          <div className="relative w-full">
+            <input
+            name="message"
+            placeholder="Type a message..."
+            className="relative w-full h-12 flex-1 p-2 px-6 bg-gray-200 text-zinc-800
+             dark:text-white placeholder:text-zinc-600 dark:bg-zinc-900/50 rounded-full focus:dark:outline-none"
+             
+          />
+          <Mic className=" absolute right-1 top-0 h-12 w-12 px-3 rounded-full text-zinc-700 dark:text-gray-100 cursor-not-allowed" />
+          </div>
+
+     
+        <button className="shrink-0 cursor-pointer bg-violet-500 rounded-full h-12 w-12 flex items-center justify-center">
+          <SendHorizontal />
+        </button>
       </form>
     </div>
   );

@@ -5,6 +5,7 @@ import UserChat from "@/components/UserChat/UserChat";
 import UserQueueList from "@/components/UserQueueList/UserQueueList";
 import { useTheme } from "@/context/ThemeProvider";
 import { useUser } from "@/context/UserProvider";
+import useQueue from "@/hooks/useQueue";
 import { useUserSupabase } from "@/hooks/useUserSupabase";
 import {
   Settings,
@@ -26,6 +27,7 @@ interface UserData {
 export default function Chat() {
   const { theme, toggleTheme } = useTheme();
   const { user, setUser } = useUser();
+  const { users } = useQueue()
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
   const { id } = useParams<{ id: string }>();
@@ -47,7 +49,7 @@ export default function Chat() {
   return (
     <div className="h-screen flex bg-zinc-50 dark:bg-zinc-900">
       {/* Sidebar */}
-      <aside className="w-80 bg-zinc-100 dark:bg-zinc-800 border-r bordeg-zinc-200 dark:bordeg-zinc-700 flex flex-col">
+      <aside className="w-80 bg-zinc-100 dark:bg-zinc-800 border-r-2 dark:bordeg-zinc-700 flex flex-col">
         {/* Header da sidebar */}
         <HeaderAside/>
 
@@ -55,12 +57,12 @@ export default function Chat() {
         <div className="flex-1 overflow-hidden">
           {/* Seção de chats ativos */}
           <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-[500] text-zinc-900 dark:text-white">
                 All Chats
               </h3>
               <span className="text-sm h-7 w-7 flex items-center justify-center font-semibold bg-violet-300 dark:bg-zinc-700 text-violet-500 dark:text-violet-500 rounded-full">
-                90
+                {users.length}
               </span>
             </div>
           </div>
@@ -95,7 +97,7 @@ export default function Chat() {
                   <h2 className="font-semibold text-zinc-900 dark:text-white">
                     {selectedUser?.name}
                   </h2>
-                  <p className="text-sm text-green-500">Online</p>
+                  <p className="text-xs text-green-500">Online</p>
                 </div>
               </div>
             )}
