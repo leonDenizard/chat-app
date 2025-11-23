@@ -6,33 +6,41 @@ import { useEffect, useState } from "react";
 export default function UserChat({ user, selectedUser, setSelectedUser }) {
   const [messages, setMessages] = useState([]);
 
-  const { loadMessage } = useMessageSupabase()
-  const { creatChannel, autoOpen } = useMessageRealTime()
+  const { loadMessages } = useMessageSupabase();
+  const { creatChannel, autoOpen } = useMessageRealTime();
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!user || !selectedUser) return;
+
+      const {messages, error } = await loadMessages({
+        fromUserId: user.id,
+        toUserId: selectedUser.id
+      });
+
+      if(error){
+        console.log(error)
+        return
+      }
+
+      setMessages(messages)
+    };
+
+    fetchMessages()
+  }, [user?.id, selectedUser?.id]);
 
   useEffect(() => {
     if (!user || !selectedUser) return;
 
-    loadMessage(user, selectedUser, setMessages)
-
+    creatChannel(user, selectedUser, setMessages);
   }, [user, selectedUser]);
-
-
-  useEffect(() => {
-    if (!user || !selectedUser) return;
-
-    creatChannel(user, selectedUser, setMessages)
-
-  }, [user, selectedUser]);
-
 
   // 3️⃣ Auto-open de conversa quando alguém envia para mim
   useEffect(() => {
     if (!user) return;
 
     autoOpen(user, selectedUser, setSelectedUser);
-
   }, [user, selectedUser]);
-
 
   // 4️⃣ Enviar mensagem
   async function sendMessage(text) {
@@ -44,7 +52,7 @@ export default function UserChat({ user, selectedUser, setSelectedUser }) {
       content: text,
     });
   }
-
+  
 
   return (
     <div className="flex flex-col h-full p-4">
@@ -78,4 +86,3 @@ export default function UserChat({ user, selectedUser, setSelectedUser }) {
     </div>
   );
 }
-

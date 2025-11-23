@@ -1,12 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/context/UserProvider";
+import { useUserSupabase } from "@/hooks/useUserSupabase";
 import { supabase } from "@/lib/supabse";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 interface FormData {
   name: string;
+}
+
+interface UserFromSupabase {
+  id: string;
+  name: string;
+  avatar?: string;
+  joined_at: string;
+  last_seen: string;
 }
 
 export default function Signin() {
@@ -17,24 +26,27 @@ export default function Signin() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<FormData>();
 
-  const onSubmit = async (data) => {
+  const { createUser } = useUserSupabase()
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     
-    const {data: inserted, error} = await supabase
-    .from("queue")
-    .insert({name: data.name})
-    .select()
-    .single()
+    
+    const {user, error} = await createUser({name: data.name})
 
     if(error){
-      console.log(error)
-      return
+      setError("root", {message: error})
     }
-    setUser(inserted)
+      
+    if(user){
+      setUser(user)
+      navigate(`/chat/${user.id}`);
+    }
 
-    navigate(`/chat?id=${inserted.id}`);
+    
+    
   };
 
   return (
@@ -49,15 +61,17 @@ export default function Signin() {
               required: "Informe seu nome ou username",
               minLength: {
                 value: 3,
-                message: "Mínimo 3 caractes",
+                message: "Mínimo 3 caracteres",
               },
             })}
             type="text"
             placeholder="Digite seu nome ou username"
           />
           {errors.name && <p className="text-red-400">{errors.name.message}</p>}
+          {errors.root && <p className="text-red-400">{errors.root.message}</p>}
+          
           <Button type="submit" disabled={isSubmitting} name="TESTE">
-            Entrar
+            {isSubmitting ? "Entrando" : "Entrar"}
           </Button>
         </div>
       </form>

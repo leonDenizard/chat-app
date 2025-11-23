@@ -9,7 +9,7 @@ function App() {
       <UserProvider>
         <Routes>
           <Route path="/" element={<Signin />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat/:id" element={<Chat />} />
         </Routes>
       </UserProvider>
     </BrowserRouter>
