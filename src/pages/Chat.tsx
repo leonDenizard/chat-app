@@ -7,25 +7,36 @@ import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+interface UserData {
+  id: string;
+  name: string;
+  avatar?: string | null;
+  joined_at: string;
+  last_seen: string;
+}
+
 export default function Chat() {
   const { user, setUser } = useUser();
-  const [selectedUser, setSelectedUser] = useState(null);
-  
-  const { id } = useParams()
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
-  const { getUser, removeUser } = useUserSupabase()
+  const { id } = useParams<{ id: string }>();
+
+  const { getUser, removeUser } = useUserSupabase();
 
   useEffect(() => {
-    
     if (!id || user) return;
-    
-    getUser(id, setUser)
 
+    getUser(id, setUser);
+  }, [id, user, getUser, setUser]);
+
+
+  useEffect(() => {
     return () => {
-      if(user?.id) removeUser(id, user)
-    }
-
-  }, [user]);
+      if (user?.id && id) {
+        removeUser(id, user);
+      }
+    };
+  }, []);
 
   return (
     <div className="border h-screen flex">
@@ -39,12 +50,16 @@ export default function Chat() {
         </header>
 
         {/* section users chat */}
-        <UserQueueList onSelectUser={setSelectedUser}/>
+        <UserQueueList onSelectUser={setSelectedUser} />
       </aside>
 
       {/* Principal Chat */}
-      <main className="flex-1 border border-red-300">
-        <UserChat user={user} selectedUser={selectedUser} setSelectedUser={setSelectedUser}/>
+      <main className="border flex-1 border-red-300">
+        <UserChat
+          user={user}
+          selectedUser={selectedUser}
+          setSelectedUser={setSelectedUser}
+        />
       </main>
     </div>
   );

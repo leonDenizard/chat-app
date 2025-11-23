@@ -1,5 +1,6 @@
 import { useUser } from "@/context/UserProvider";
 import { useQueue } from "@/hooks/useQueue";
+import { getRandomAvatar } from "@/utils/avatarUtils";
 
 interface QueueUser {
   id: string;
@@ -52,7 +53,7 @@ export default function UserQueueList({ onSelectUser }: UserQueueListProps) {
           onClick={() => onSelectUser(u)}
         >
           <img
-            src={u.avatar || "https://placehold.co/48x48"}
+            src={u.avatar || getRandomAvatar()}
             alt={`${u.name} profile picture`}
             className="w-12 h-12 rounded-3xl"
           />

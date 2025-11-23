@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react"
 
 interface UserData{
     id: string
@@ -14,9 +15,13 @@ interface UserContextProps{
     setUser: (data: UserData | null) => void;
 }
 
+interface UserProviderProps {
+  children: ReactNode;
+}
+
 const UserContext = createContext<UserContextProps | undefined>(undefined)
 
-export function UserProvider({ children }){
+export function UserProvider({ children }: UserProviderProps){
     const [user, setUser] = useState<UserData | null>(null)
 
     return(

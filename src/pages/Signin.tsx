@@ -23,6 +23,7 @@ export default function Signin() {
   } = useForm<FormData>();
 
   const { createUser } = useUserSupabase();
+
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     const { user, error } = await createUser({ name: data.name });
 
@@ -59,18 +60,19 @@ export default function Signin() {
       <div className="z-10 w-full max-w-md mx-auto px-6">
         <div className="flex flex-col items-center space-y-6">
           <TextType
-            text={["Conecte.", "Converse.", "Crie."]}
+            text={["Welcome to", "Your Next Chat", "Experience", "Powerd by React"]}
             typingSpeed={150}
             pauseDuration={1500}
             showCursor={true}
             cursorCharacter="_"
-            className="relative -top-4 text-5xl font-bold tracking-wider text-zinc-200 text-center text-shadow-lg"
+            className="relative -top-4 2xl:-top-16 text-5xl font-bold text-center text-shadow-lg
+            font-sans-conde lg:w-7xl lg:text-7xl 2xl:text-8xl text-zinc-300"
           />
 
           <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
             <div className="space-y-2">
               <Input
-                className="w-full p-6 border-2 border-white/15"
+                className="w-full p-6 border-3 border-white/15"
                 id="name"
                 {...register("name", {
                   required: "Informe seu nome ou username",

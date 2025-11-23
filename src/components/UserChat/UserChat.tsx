@@ -1,12 +1,36 @@
 import useMessageRealTime from "@/hooks/useMessageRealTime";
 import { useMessageSupabase } from "@/hooks/useMessageSupabase";
-import { supabase } from "@/lib/supabse";
 import { useEffect, useState } from "react";
 
-export default function UserChat({ user, selectedUser, setSelectedUser }) {
-  const [messages, setMessages] = useState([]);
+interface UserData{
+  id: string;
+  name: string;
+  avatar?: string | null;
+  joined_at: string;
+  last_seen: string;
+}
 
-  const { loadMessages } = useMessageSupabase();
+interface Message {
+  id: string;
+  content: string;
+  from_id: string;
+  to_id: string;
+  created_at: string;
+  updated_at: string;
+  read_at?: string | null;
+}
+
+interface UserChatProps {
+  user: UserData | null;
+  selectedUser: UserData | null;
+  setSelectedUser: (user: UserData | null) => void;
+}
+
+
+export default function UserChat({ user, selectedUser, setSelectedUser }: UserChatProps) {
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const { loadMessages, sendMessage } = useMessageSupabase();
   const { creatChannel, autoOpen } = useMessageRealTime();
 
   useEffect(() => {
@@ -42,15 +66,19 @@ export default function UserChat({ user, selectedUser, setSelectedUser }) {
     autoOpen(user, selectedUser, setSelectedUser);
   }, [user, selectedUser]);
 
-  // 4️⃣ Enviar mensagem
-  async function sendMessage(text) {
-    if (!text.trim()) return;
+  const handleSendMessage = async(text: string) => {
 
-    await supabase.from("messages").insert({
-      from_id: user.id,
-      to_id: selectedUser.id,
-      content: text,
-    });
+    if (!text.trim() || !user || !selectedUser) return;
+
+    const result = await sendMessage({
+      text: text.trim(),
+      fromUserId: user.id,
+      toUserId: selectedUser.id
+    })
+
+    if(result.error){
+      console.log("Erro ao enviar", result.error)
+    }
   }
   
 
@@ -61,7 +89,7 @@ export default function UserChat({ user, selectedUser, setSelectedUser }) {
           <div
             key={msg.id}
             className={`p-2 my-2 rounded-lg max-w-[60%] ${
-              msg.from_id === user.id
+              msg.from_id === user?.id
                 ? "bg-blue-600 text-white self-end ml-auto"
                 : "bg-gray-700 text-white self-start"
             }`}
@@ -74,9 +102,10 @@ export default function UserChat({ user, selectedUser, setSelectedUser }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const text = e.target.message.value;
-          sendMessage(text);
-          e.target.reset();
+          const formData = new FormData(e.currentTarget)
+          const text = formData.get("message") as string
+          handleSendMessage(text)
+          e.currentTarget.reset();
         }}
         className="flex gap-2 mt-2"
       >
