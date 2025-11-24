@@ -2,7 +2,6 @@ import { useUser } from "@/context/UserProvider";
 import { useQueue } from "@/hooks/useQueue";
 import { getRandomAvatar } from "@/utils/avatarUtils";
 import { RefreshCcw } from "lucide-react";
-import { useEffect } from "react";
 
 interface QueueUser {
   id: string;
