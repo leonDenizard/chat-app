@@ -49,12 +49,12 @@ export default function Chat() {
   return (
     <div className="h-screen flex bg-zinc-50 dark:bg-zinc-900">
       {/* Sidebar */}
-      <aside className="w-80 bg-zinc-100 dark:bg-zinc-800 border-r-2 dark:bordeg-zinc-700 flex flex-col">
+      <aside className="lg:w-80 bg-zinc-100 dark:bg-zinc-800 border-r-2 dark:bordeg-zinc-700 flex flex-col">
         {/* Header da sidebar */}
         <HeaderAside/>
 
         {/* Seções */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto scrollbar">
           {/* Seção de chats ativos */}
           <div className="p-4">
             <div className="flex items-center justify-between">

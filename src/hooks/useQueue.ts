@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabse";
-
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface QueueUser {
   id: string;
@@ -17,13 +17,7 @@ interface UseQueueReturn {
   refreshUsers: () => Promise<void>;
 }
 
-interface SupabaseResponse<T> {
-  data: T | null;
-  error: any | null;
-}
-
 export function useQueue(): UseQueueReturn {
-  
   const [users, setUsers] = useState<QueueUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,11 +27,10 @@ export function useQueue(): UseQueueReturn {
       setIsLoading(true);
       setError(null);
 
-      const { data, error: supabaseError }: SupabaseResponse<QueueUser[]> = 
-        await supabase
-          .from("queue")
-          .select("*")
-          .order("joined_at", { ascending: true });
+      const { data, error: supabaseError } = await supabase
+        .from("queue")
+        .select("*")
+        .order("joined_at", { ascending: true });
 
       if (supabaseError) {
         console.error("Erro ao carregar usuários:", supabaseError);
@@ -59,42 +52,68 @@ export function useQueue(): UseQueueReturn {
   };
 
   useEffect(() => {
-
     loadUsers();
 
-    const channel = supabase
-      .channel("queue-realtime")
+    
+    const channel: RealtimeChannel = supabase
+      .channel(`queue-changes-${Date.now()}`) // ← Nome único
       .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "queue" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setUsers((prev) => [...prev, payload.new as QueueUser]);
+        'postgres_changes' as any,
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'queue' 
+        },
+        (payload: any) => {
+          console.log('Real-time event received:', payload); 
+
+          const eventType = payload.eventType;
+          
+          if (eventType === 'INSERT') {
+            const newUser = payload.new as QueueUser;
+            console.log('New user added:', newUser); 
+            setUsers((prev) => {
+              // ✅ Evita duplicatas
+              const exists = prev.find(u => u.id === newUser.id);
+              if (exists) return prev;
+              return [...prev, newUser];
+            });
           }
 
-          if (payload.eventType === "DELETE") {
+          if (eventType === 'DELETE') {
+            const deletedUser = payload.old as QueueUser;
+            console.log('User removed:', deletedUser); 
             setUsers((prev) =>
-              prev.filter((u) => u.id !== (payload.old as QueueUser).id)
+              prev.filter((u) => u.id !== deletedUser.id)
             );
           }
 
-          if (payload.eventType === "UPDATE") {
+          if (eventType === 'UPDATE') {
+            const updatedUser = payload.new as QueueUser;
+            console.log('User updated:', updatedUser); 
             setUsers((prev) =>
               prev.map((u) =>
-                u.id === (payload.new as QueueUser).id
-                  ? (payload.new as QueueUser)
-                  : u
+                u.id === updatedUser.id ? updatedUser : u
               )
             );
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time conectado com sucesso!');
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Erro na conexão real-time');
+        }
+      });
 
     return () => {
+      console.log('Limpando canal real-time...'); 
       supabase.removeChannel(channel);
     };
-  }, []); 
+  }, []);
 
   return {
     users,

@@ -1,6 +1,6 @@
 import useMessageRealTime from "@/hooks/useMessageRealTime";
 import { useMessageSupabase } from "@/hooks/useMessageSupabase";
-import { Mic, Paperclip, Send, SendHorizontal, Smile } from "lucide-react";
+import { Mic, Paperclip, SendHorizontal, Smile } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface UserData {
