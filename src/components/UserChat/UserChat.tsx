@@ -60,7 +60,9 @@ export default function UserChat({
   useEffect(() => {
     if (!user || !selectedUser) return;
 
-    creatChannel(user, selectedUser, setMessages);
+    const cleanup = creatChannel(user, selectedUser, setMessages);
+    return cleanup
+    
   }, [user, selectedUser]);
 
   // 3️⃣ Auto-open de conversa quando alguém envia para mim
