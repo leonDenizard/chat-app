@@ -7,14 +7,12 @@ import { useTheme } from "@/context/ThemeProvider";
 import { useUser } from "@/context/UserProvider";
 import useQueue from "@/hooks/useQueue";
 import { useUserSupabase } from "@/hooks/useUserSupabase";
-import {
-  Settings,
-  Users,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { supabase } from "@/lib/supabse";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import { Settings, Users, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface UserData {
   id: string;
@@ -27,10 +25,12 @@ interface UserData {
 export default function Chat() {
   const { theme, toggleTheme } = useTheme();
   const { user, setUser } = useUser();
-  const { users } = useQueue()
+  const { users } = useQueue();
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
   const { getUser, removeUser } = useUserSupabase();
 
   useEffect(() => {
@@ -46,12 +46,59 @@ export default function Chat() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel: RealtimeChannel = supabase
+      .channel(`kick:${user.id}`)
+      .on(
+        "postgres_changes" as any,
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "queue",
+          filter: `id=eq.${user.id}`,
+        },
+        () => {
+          setUser(null);
+          navigate("/", { replace: true, state: { reason: "expired" } });
+
+          toast("Your session has expired. Please log in again.", {
+            style: {
+              borderRadius: "10",
+              background: "#333",
+              color: "#fff",
+            },
+          });
+        }
+      )
+      .subscribe();
+
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("queue")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!data) {
+        setUser(null);
+        navigate("/", { replace: true});
+      }
+    }, 10000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [user?.id, setUser, navigate]);
+
   return (
     <div className="h-screen flex bg-zinc-50 dark:bg-zinc-900">
       {/* Sidebar */}
       <aside className="lg:w-80 bg-zinc-100 dark:bg-zinc-800 border-r-2 dark:bordeg-zinc-700 flex flex-col">
         {/* Header da sidebar */}
-        <HeaderAside/>
+        <HeaderAside />
 
         {/* Seções */}
         <div className="flex-1 overflow-auto scrollbar">
@@ -71,11 +118,9 @@ export default function Chat() {
           <div className="flex-1 overflow-y-auto">
             <UserQueueList onSelectUser={setSelectedUser} />
           </div>
-
-          
         </div>
         {/* Footer da sidebar */}
-          <FooterAside/>
+        <FooterAside />
       </aside>
 
       {/* Área principal do chat */}
@@ -135,7 +180,6 @@ export default function Chat() {
             />
           </div>
         ) : (
-          
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="w-20 h-20 bg-violet-300 dark:bg-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4">

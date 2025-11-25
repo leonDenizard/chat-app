@@ -57,10 +57,17 @@ export default function Signin() {
         />
       </div>
 
+      
+
       <div className="z-10 w-full max-w-md mx-auto px-6">
         <div className="flex flex-col items-center space-y-6">
           <TextType
-            text={["Welcome to", "Your Next Chat", "Experience", "Powerd by React.js"]}
+            text={[
+              "Welcome to",
+              "Your Next Chat",
+              "Experience",
+              "Powerd by React.js",
+            ]}
             typingSpeed={150}
             pauseDuration={1500}
             showCursor={true}
