@@ -45,8 +45,8 @@ export default function Signin() {
           raysOrigin="top-center"
           raysColor="#ffff"
           raysSpeed={1.5}
-          lightSpread={0.8}
-          rayLength={1.5}
+          lightSpread={4}
+          rayLength={2}
           followMouse={true}
           mouseInfluence={0.1}
           noiseAmount={0.1}
@@ -105,7 +105,7 @@ export default function Signin() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-zinc-600 hover:bg-zinc-700 transition-all cursor-pointer p-6"
+              className="w-full bg-zinc-300 hover:bg-zinc-100 transition-all cursor-pointer p-6"
             >
               {isSubmitting ? "Entrando..." : "Entrar"}
             </Button>

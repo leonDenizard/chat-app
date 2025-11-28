@@ -5,14 +5,13 @@ import UserChat from "@/components/UserChat/UserChat";
 import UserQueueList from "@/components/UserQueueList/UserQueueList";
 import { useTheme } from "@/context/ThemeProvider";
 import { useUser } from "@/context/UserProvider";
+import { useKickUser } from "@/hooks/useKickUser";
 import useQueue from "@/hooks/useQueue";
 import { useUserSupabase } from "@/hooks/useUserSupabase";
-import { supabase } from "@/lib/supabse";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import { Settings, Users, Moon, Sun } from "lucide-react";
+import { Settings, Users, Moon, Sun, TimerReset } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 interface UserData {
   id: string;
@@ -29,9 +28,19 @@ export default function Chat() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const { getUser, removeUser } = useUserSupabase();
+
+  useKickUser({
+    pollMs: 10000,
+    onKicked: () => {
+      toast("Your session has expired.", {
+        icon: <TimerReset />,
+        style: { borderRadius: 10, background: "#333", color: "#fff"},
+      })
+    },
+    replaceHistory: true
+  })
 
   useEffect(() => {
     if (!id || user) return;
@@ -45,53 +54,6 @@ export default function Chat() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel: RealtimeChannel = supabase
-      .channel(`kick:${user.id}`)
-      .on(
-        "postgres_changes" as any,
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "queue",
-          filter: `id=eq.${user.id}`,
-        },
-        () => {
-          setUser(null);
-          navigate("/", { replace: true, state: { reason: "expired" } });
-
-          toast("Your session has expired. Please log in again.", {
-            style: {
-              borderRadius: "10",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-        }
-      )
-      .subscribe();
-
-    const interval = setInterval(async () => {
-      const { data } = await supabase
-        .from("queue")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!data) {
-        setUser(null);
-        navigate("/", { replace: true});
-      }
-    }, 10000);
-
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(interval);
-    };
-  }, [user?.id, setUser, navigate]);
 
   return (
     <div className="h-screen flex bg-zinc-50 dark:bg-zinc-900">

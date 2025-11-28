@@ -53,10 +53,11 @@ export default function UserQueueList({ onSelectUser }: UserQueueListProps) {
       {users.map((u) => (
         <div
           key={u.id}
-          className={`flex items-center gap-3 p-4 cursor-pointer dark:text-white hover:bg-violet-100 hover:dark:bg-zinc-200/5 transition-colors duration-300 ${
+          className={`flex items-center gap-3 p-4 cursor-pointer  dark:text-white hover:bg-violet-100 hover:dark:bg-zinc-200/5 transition-colors duration-300 ${
 
             u.id === user?.id ? "bg-zinc-200 hover:bg-zinc-200 dark:bg-zinc-900/30 hover:dark:bg-zinc-900/80 transition-colors duration-300" : ""
           }`}
+          
           onClick={() => onSelectUser(u)}
         >
           <img
