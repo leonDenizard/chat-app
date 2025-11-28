@@ -78,7 +78,7 @@ export default function Chat() {
 
           {/* Lista dos usuários */}
           <div className="flex-1 overflow-y-auto">
-            <UserQueueList onSelectUser={setSelectedUser} />
+            <UserQueueList onSelectUser={setSelectedUser} selectedUserId={selectedUser?.id} />
           </div>
         </div>
         {/* Footer da sidebar */}
