@@ -15,11 +15,12 @@ interface QueueUser {
 interface UserQueueListProps {
   onSelectUser: (user: QueueUser) => void;
   selectedUserId?: string;
+  setIsAsideOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
-
 export default function UserQueueList({
   onSelectUser,
   selectedUserId,
+  setIsAsideOpen
 }: UserQueueListProps) {
   const { user } = useUser();
 
@@ -49,7 +50,7 @@ export default function UserQueueList({
   }
 
   return (
-    <section>
+    <section onClick={() => setIsAsideOpen(false)}>
       {users.map((u) => {
         const isSelected = u.id === selectedUserId;
         const isMe = u.id == user?.id;
@@ -61,10 +62,10 @@ export default function UserQueueList({
             className={`
               relative flex items-center gap-3 p-4 cursor-pointer dark:text-white
               hover:bg-violet-100 hover:dark:bg-zinc-200/5 transition-colors duration-300
-              `}
-              onClick={() => onSelectUser(u)}
-              >
-            ${isMe ? "bg-zinc-200 dark:bg-zinc-900/30" : ""}
+              ${isMe ? "bg-zinc-200 dark:bg-zinc-900/30" : ""}
+            `}
+            onClick={() => onSelectUser(u)}
+          >
             {isSelected && (
               <motion.div
                 layoutId="selected-indicator"

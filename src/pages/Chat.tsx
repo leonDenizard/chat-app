@@ -8,7 +8,7 @@ import { useUser } from "@/context/UserProvider";
 import { useKickUser } from "@/hooks/useKickUser";
 import useQueue from "@/hooks/useQueue";
 import { useUserSupabase } from "@/hooks/useUserSupabase";
-import { Settings, Users, Moon, Sun, TimerReset } from "lucide-react";
+import { Settings, Users, Moon, Sun, TimerReset, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
@@ -26,6 +26,7 @@ export default function Chat() {
   const { user, setUser } = useUser();
   const { users } = useQueue();
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const [isAsideOpen, setIsAsideOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
 
@@ -36,11 +37,11 @@ export default function Chat() {
     onKicked: () => {
       toast("Your session has expired.", {
         icon: <TimerReset />,
-        style: { borderRadius: 10, background: "#333", color: "#fff"},
-      })
+        style: { borderRadius: 10, background: "#333", color: "#fff" },
+      });
     },
-    replaceHistory: true
-  })
+    replaceHistory: true,
+  });
 
   useEffect(() => {
     if (!id || user) return;
@@ -56,11 +57,17 @@ export default function Chat() {
   }, []);
 
   return (
-    <div className="h-screen flex bg-zinc-50 dark:bg-zinc-900">
+    <div className="h-screen flex bg-zinc-50 dark:bg-zinc-800">
       {/* Sidebar */}
-      <aside className="lg:w-80 bg-zinc-100 dark:bg-zinc-800 border-r-2 dark:bordeg-zinc-700 flex flex-col">
+      <aside
+        className={`fixed md:static top-0 left-0 h-full z-50 bg-zinc-100 dark:bg-zinc-800 border-r-2 dark:border-zinc-700
+        flex flex-col w-80 transform transition-transform duration-200
+        ${isAsideOpen ? "translate-x-0" : "-translate-x-full"}
+        md:translate-x-0 
+       `}
+      >
         {/* Header da sidebar */}
-        <HeaderAside />
+        <HeaderAside setIsAsideOpen={setIsAsideOpen} />
 
         {/* Seções */}
         <div className="flex-1 overflow-auto scrollbar">
@@ -78,7 +85,11 @@ export default function Chat() {
 
           {/* Lista dos usuários */}
           <div className="flex-1 overflow-y-auto">
-            <UserQueueList onSelectUser={setSelectedUser} selectedUserId={selectedUser?.id} />
+            <UserQueueList
+              setIsAsideOpen={setIsAsideOpen}
+              onSelectUser={setSelectedUser}
+              selectedUserId={selectedUser?.id}
+            />
           </div>
         </div>
         {/* Footer da sidebar */}
@@ -88,6 +99,10 @@ export default function Chat() {
       {/* Área principal do chat */}
       <main className="flex-1 flex flex-col bg-zinc-100 dark:bg-zinc-800">
         <header className="h-20 border-b-2 dark:bordeg-zinc-700 bg-zinc-100 dark:bg-zinc-800 flex items-center px-4">
+          <Menu
+            className="md:hidden mr-2 cursor-pointer h-10 w-12 p-2 text-zinc-700 dark:text-zinc-200 hover:dark:text-zinc-100 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-lg transition-colors duration-300"
+            onClick={() => setIsAsideOpen(true)}
+          />
           <div
             className={`w-full flex items-center justify-between ${
               selectedUser ? "" : "justify-end"

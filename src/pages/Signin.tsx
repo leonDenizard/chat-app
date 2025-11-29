@@ -39,7 +39,7 @@ export default function Signin() {
   };
 
   return (
-    <div className="relative h-dvh flex items-center justify-center">
+    <div className="relative h-dvh flex items-center justify-center bg-zinc-950">
       <div className="fixed inset-0 w-full h-full z-0">
         <LightRays
           raysOrigin="top-center"
@@ -82,14 +82,19 @@ export default function Signin() {
                 className="w-full p-6 border-3 border-white/15"
                 id="name"
                 {...register("name", {
-                  required: "Informe seu nome ou username",
+                  required: "Please provide your name or username.",
                   minLength: {
                     value: 3,
-                    message: "Mínimo 3 caracteres",
+                    message: "Minimum 3 characters",
+                  },
+                  maxLength: {
+                    value: 20,
+                    message: "Maximum 20 characters"
                   },
                 })}
+                maxLength={20}
                 type="text"
-                placeholder="Digite seu nome ou username"
+                placeholder="Enter your name or username."
               />
 
               <div className="min-h-[1.25rem]">
@@ -105,7 +110,7 @@ export default function Signin() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-zinc-300 hover:bg-zinc-100 transition-all cursor-pointer p-6"
+              className="w-full text-black bg-zinc-300 hover:bg-zinc-100 transition-all cursor-pointer p-6"
             >
               {isSubmitting ? "Entrando..." : "Entrar"}
             </Button>

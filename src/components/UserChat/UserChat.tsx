@@ -92,10 +92,10 @@ export default function UserChat({
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`p-2 my-2 rounded-lg max-w-[60%] ${
+            className={`p-2 my-2 rounded-lg max-w-[40%] text-wrap ${
               msg.from_id === user?.id
-                ? "bg-blue-600 text-white self-end ml-auto"
-                : "bg-gray-700 text-white self-start"
+                ? "bg-violet-500 text-white self-end ml-auto"
+                : "bg-zinc-700 text-white self-start"
             }`}
           >
             {msg.content}
