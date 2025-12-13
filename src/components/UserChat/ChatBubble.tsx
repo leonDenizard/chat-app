@@ -36,7 +36,7 @@ export default function ChatBubble({
       }}
       className={`flex gap-2 my-1 ${isMe ? "justify-end" : "justify-start"}`}
     >
-      {/* Avatar (esquerda) */}
+      {/* Avatar esquerda */}
       {!isMe && showAvatar && (
         <img
           src={avatar || "/av1.png"}
@@ -58,7 +58,7 @@ export default function ChatBubble({
         {message}
       </div>
 
-      {/* Avatar (direita) */}
+      {/* Avatar direita */}
       {isMe && showAvatar && (
         <img
           src={avatar || "/av1.png"}

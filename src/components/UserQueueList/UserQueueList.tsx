@@ -53,7 +53,6 @@ export default function UserQueueList({
     <section onClick={() => setIsAsideOpen(false)}>
       {users.map((u) => {
         const isSelected = u.id === selectedUserId;
-        const isMe = u.id == user?.id;
 
         return (
           <motion.div
