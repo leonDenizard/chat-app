@@ -125,3 +125,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+.bubble-right::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 14px;
+  width: 11px;
+  height: 11px;
+  background: inherit;
+  transform: rotate(45deg);
+  overflow: hidden;
+}
+
+.bubble-left::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: rotate(45deg);
+  overflow: hidden;
+}

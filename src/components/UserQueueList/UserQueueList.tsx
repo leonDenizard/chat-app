@@ -62,7 +62,7 @@ export default function UserQueueList({
             className={`
               relative flex items-center gap-3 p-4 cursor-pointer dark:text-white
               hover:bg-violet-100 hover:dark:bg-zinc-200/5 transition-colors duration-300
-              ${isMe ? "bg-zinc-200 dark:bg-zinc-900/30" : ""}
+              ${isSelected ? "bg-zinc-200 dark:bg-zinc-900/30" : ""}
             `}
             onClick={() => onSelectUser(u)}
           >

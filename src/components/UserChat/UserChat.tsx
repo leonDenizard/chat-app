@@ -2,6 +2,7 @@ import useMessageRealTime from "@/hooks/useMessageRealTime";
 import { useMessageSupabase } from "@/hooks/useMessageSupabase";
 import { Mic, Paperclip, SendHorizontal, Smile } from "lucide-react";
 import { useEffect, useState } from "react";
+import ChatBubble from "./ChatBubble";
 
 interface UserData {
   id: string;
@@ -61,11 +62,10 @@ export default function UserChat({
     if (!user || !selectedUser) return;
 
     const cleanup = creatChannel(user, selectedUser, setMessages);
-    return cleanup
-    
+    return cleanup;
   }, [user, selectedUser]);
 
-  // 3️⃣ Auto-open de conversa quando alguém envia para mim
+  // Auto-open de conversa quando alguém envia para mim
   useEffect(() => {
     if (!user) return;
 
@@ -87,20 +87,25 @@ export default function UserChat({
   };
 
   return (
-    <div className="flex flex-col h-full p-4">
-      <div className="flex-1 overflow-y-auto">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`p-2 my-2 rounded-lg max-w-[40%] text-wrap ${
-              msg.from_id === user?.id
-                ? "bg-violet-500 text-white self-end ml-auto"
-                : "bg-zinc-700 text-white self-start"
-            }`}
-          >
-            {msg.content}
-          </div>
-        ))}
+    <div className="flex flex-col justify-between h-full p-4 w-full">
+      <div className="relative flex-1 overflow-y-auto scrollbar">
+        {messages.map((msg, index) => {
+          const isMe = msg.from_id === user?.id;
+          const prevMsg = messages[index - 1];
+          const showAvatar = !prevMsg || prevMsg.from_id !== msg.from_id;
+
+          const avatar = isMe ? user?.avatar : selectedUser?.avatar;
+
+          return (
+            <ChatBubble
+              key={msg.id}
+              message={msg.content}
+              isMe={isMe}
+              showAvatar={showAvatar}
+              avatar={avatar}
+            />
+          );
+        })}
       </div>
 
       <form
@@ -111,23 +116,20 @@ export default function UserChat({
           handleSendMessage(text);
           e.currentTarget.reset();
         }}
-        className="flex gap-2 mt-2 items-center"
+        className="flex gap-2 mt-2 items-center shrink-0"
       >
-        
-          <Paperclip className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed"/>
-          <Smile className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
-          <div className="relative w-full">
-            <input
+        <Paperclip className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
+        <Smile className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
+        <div className="relative w-full">
+          <input
             name="message"
             placeholder="Type a message..."
             className="relative w-full h-12 flex-1 p-2 px-6 bg-gray-200 text-zinc-800
              dark:text-white placeholder:text-zinc-600 dark:bg-zinc-900/50 rounded-full focus:dark:outline-none"
-             
           />
           <Mic className=" absolute right-1 top-0 h-12 w-12 px-3 rounded-full text-zinc-700 dark:text-gray-100 cursor-not-allowed" />
-          </div>
+        </div>
 
-     
         <button className="shrink-0 cursor-pointer bg-violet-500 rounded-full h-12 w-12 flex items-center justify-center">
           <SendHorizontal />
         </button>

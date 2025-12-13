@@ -111,9 +111,9 @@ export default function Chat() {
             {selectedUser && (
               <div className="flex items-center gap-3">
                 <img
-                  src={selectedUser?.avatar || "/default-avatar.png"}
+                  src={selectedUser?.avatar || "/av1.png"}
                   alt={selectedUser?.name}
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-md"
                 />
                 <div>
                   <h2 className="font-semibold text-zinc-900 dark:text-white">
@@ -149,7 +149,7 @@ export default function Chat() {
         </header>
 
         {selectedUser ? (
-          <div className="flex-1">
+          <div className="flex flex-1 overflow-hidden">
             <UserChat
               user={user}
               selectedUser={selectedUser}
