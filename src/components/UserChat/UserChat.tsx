@@ -34,6 +34,7 @@ export default function UserChat({
   setSelectedUser,
 }: UserChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState<string | "">("");
 
   const { loadMessages, sendMessage } = useMessageSupabase();
   const { creatChannel, autoOpen } = useMessageRealTime();
@@ -84,6 +85,7 @@ export default function UserChat({
     if (result.error) {
       console.log("Erro ao enviar", result.error);
     }
+    setInputValue("");
   };
 
   const chatRef = useRef<HTMLDivElement | null>(null);
@@ -97,16 +99,23 @@ export default function UserChat({
     }
   }, [messages]);
 
+  const handleInputText = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
   return (
-    <div className="relative flex flex-col justify-between h-full w-full ">
-      <div className="pointer-events-none
+    <div className="relative flex flex-col justify-between h-full w-full">
+      <div
+        className="pointer-events-none
         absolute top-0 left-0 right-0
         h-6
         bg-gradient-to-b
-        from-zinc-800
-        to-transparent z-10">
-      </div>
-      <div className="relative flex-1 p-4 overflow-y-auto scrollbar" ref={chatRef}>
+        dark:from-zinc-800
+        to-transparent z-10"
+      ></div>
+      <div
+        className="relative flex-1 p-4 overflow-y-auto scrollbar"
+        ref={chatRef}
+      >
         {messages.map((msg, index) => {
           const isMe = msg.from_id === user?.id;
           const prevMsg = messages[index - 1];
@@ -125,13 +134,14 @@ export default function UserChat({
           );
         })}
       </div>
-      <div className="pointer-events-none
-        absolute bottom-12 left-0 right-0
+      <div
+        className="pointer-events-none
+        absolute bottom-14 left-0 right-0
         h-6
         bg-gradient-to-t
-        from-zinc-800
-        to-transparent z-10">
-      </div>
+        dark:from-zinc-800
+        to-transparent z-10"
+      ></div>
 
       <form
         onSubmit={(e) => {
@@ -141,7 +151,7 @@ export default function UserChat({
           handleSendMessage(text);
           e.currentTarget.reset();
         }}
-        className="flex gap-2 mt-2 items-center shrink-0"
+        className="flex gap-2 mt-2 items-center shrink-0 mb-1 md: px-4"
       >
         <Paperclip className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
         <Smile className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
@@ -149,13 +159,21 @@ export default function UserChat({
           <input
             name="message"
             placeholder="Type a message..."
-            className="relative w-full h-12 flex-1 p-2 px-6 bg-gray-200 text-zinc-800
+            value={inputValue}
+            onChange={handleInputText}
+            className="relative w-full h-12 flex-1 pl-4 pr-12 bg-gray-200 text-zinc-800
              dark:text-white placeholder:text-zinc-600 dark:bg-zinc-900/50 rounded-full focus:dark:outline-none"
           />
           <Mic className=" absolute right-1 top-0 h-12 w-12 px-3 rounded-full text-zinc-700 dark:text-gray-100 cursor-not-allowed" />
         </div>
 
-        <button className="shrink-0 cursor-pointer bg-violet-500 rounded-full h-12 w-12 flex items-center justify-center">
+        <button
+          className={`shrink-0 cursor-pointer rounded-full h-12 w-12 flex items-center justify-center transition-colors duration-300 ${
+            inputValue === ""
+              ? "dark:bg-zinc-900/50 dark:text-gray-100 bg-gray-200 text-zinc-950 opacity-80 cursor-not-allowed"
+              : "bg-violet-500 cursor-pointer"
+          }`}
+        >
           <SendHorizontal />
         </button>
       </form>
