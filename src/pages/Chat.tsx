@@ -60,7 +60,7 @@ export default function Chat() {
       }
     };
   }, []);
-  
+
   useEffect(() => {
     if (!user) return;
 
@@ -72,7 +72,7 @@ export default function Chat() {
 
     return cleanup;
   }, [user, selectedUser?.id]);
-  
+
   useEffect(() => {
     if (selectedUser) {
       unread.clear(selectedUser.id);
@@ -100,8 +100,12 @@ export default function Chat() {
               <h3 className="text-lg font-[500] text-zinc-900 dark:text-white">
                 All Chats
               </h3>
-              <span className="text-sm h-7 w-7 flex items-center justify-center font-semibold bg-violet-300 dark:bg-zinc-700 text-violet-500 dark:text-violet-500 rounded-full">
-                {users.length}
+              <span className="text-sm">
+                <span className="text-violet-500 font-bold">(</span>
+                <span className="mx-0.5 font-semibold text-violet-500 tabular-nums">
+                  {users.length}
+                </span>
+                <span className="text-violet-500 font-bold">)</span>
               </span>
             </div>
           </div>

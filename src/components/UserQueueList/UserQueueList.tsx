@@ -3,6 +3,7 @@ import { useQueue } from "@/hooks/useQueue";
 import { getRandomAvatar } from "@/utils/avatarUtils";
 import { RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
+import UnreadBadge from "./UnreadBadge";
 
 interface QueueUser {
   id: string;
@@ -75,19 +76,7 @@ export default function UserQueueList({
             )}
             
             {unreadCount > 0 && (
-              <span
-                className="
-                  absolute right-4
-                  text-xs h-6 w-6
-                  flex items-center justify-center
-                  font-semibold
-                  bg-violet-500
-                  text-white
-                  rounded-full
-                "
-              >
-                {unreadCount}
-              </span>
+              <UnreadBadge count={unreadCount} />
             )}
             <img
               src={u.avatar || getRandomAvatar()}
