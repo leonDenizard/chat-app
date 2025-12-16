@@ -1,7 +1,7 @@
 import useMessageRealTime from "@/hooks/useMessageRealTime";
 import { useMessageSupabase } from "@/hooks/useMessageSupabase";
 import { Mic, Paperclip, SendHorizontal, Smile } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatBubble from "./ChatBubble";
 
 interface UserData {
@@ -86,9 +86,27 @@ export default function UserChat({
     }
   };
 
+  const chatRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTo({
+        top: chatRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
+
   return (
-    <div className="flex flex-col justify-between h-full p-4 w-full">
-      <div className="relative flex-1 overflow-y-auto scrollbar">
+    <div className="relative flex flex-col justify-between h-full w-full ">
+      <div className="pointer-events-none
+        absolute top-0 left-0 right-0
+        h-6
+        bg-gradient-to-b
+        from-zinc-800
+        to-transparent z-10">
+      </div>
+      <div className="relative flex-1 p-4 overflow-y-auto scrollbar" ref={chatRef}>
         {messages.map((msg, index) => {
           const isMe = msg.from_id === user?.id;
           const prevMsg = messages[index - 1];
@@ -106,6 +124,13 @@ export default function UserChat({
             />
           );
         })}
+      </div>
+      <div className="pointer-events-none
+        absolute bottom-12 left-0 right-0
+        h-6
+        bg-gradient-to-t
+        from-zinc-800
+        to-transparent z-10">
       </div>
 
       <form

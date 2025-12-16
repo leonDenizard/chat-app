@@ -49,10 +49,10 @@ export default function ChatBubble({
 
       {/* Bubble */}
       <div
-        className={`relative p-2 max-w-[40%] break-words ${
+        className={`relative p-2 max-w-[80%] lg:max-w-[40%] xl:max-w-[35%] break-all ${
           isMe
-            ? "bg-violet-500 text-white rounded text-sm px-3"
-            : "bg-zinc-700 text-white rounded text-sm px-3"
+            ? "bg-violet-500 text-white rounded px-3"
+            : "bg-zinc-700 text-white rounded px-3"
         } ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}`}
       >
         {message}
