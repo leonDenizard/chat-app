@@ -2,8 +2,7 @@ import { supabase } from "@/lib/supabse";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { Dispatch, SetStateAction } from "react";
 
-
-interface UserData {
+export interface UserData {
   id: string;
   name: string;
   avatar?: string | null;
@@ -11,7 +10,7 @@ interface UserData {
   last_seen: string;
 }
 
-interface Message {
+export interface Message {
   id: string;
   content: string;
   from_id: string;
@@ -21,42 +20,39 @@ interface Message {
   read_at?: string | null;
 }
 
-
 type MessageSetter = Dispatch<SetStateAction<Message[]>>;
 type ChannelCleanup = () => void;
-type SimpleUserSetter = (user: UserData | null) => void;
-
 
 interface SupabasePayload {
   new: Message;
   old?: Message;
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+  eventType: "INSERT" | "UPDATE" | "DELETE";
 }
 
-
-interface UseMessageRealTimeReturn {
-  creatChannel: (
-    user: UserData, 
-    selectedUser: UserData, 
+interface UseMessageRealtimeReturn {
+  
+  createMessageChannel: (
+    currentUser: UserData,
+    selectedUser: UserData,
     setMessages: MessageSetter
   ) => ChannelCleanup;
-  autoOpen: (
-    user: UserData, 
-    selectedUser: UserData | null, 
-    setSelectedUser: SimpleUserSetter
+
+  subscribeUnread: (
+    currentUser: UserData,
+    activeUserId: string | null,
+    onUnread: (fromId: string) => void
   ) => ChannelCleanup;
 }
 
-export default function useMessageRealTime(): UseMessageRealTimeReturn {
 
-  const creatChannel = (
-    user: UserData, 
-    selectedUser: UserData, 
+export default function useMessageRealtime(): UseMessageRealtimeReturn {
+  const createMessageChannel = (
+    currentUser: UserData,
+    selectedUser: UserData,
     setMessages: MessageSetter
   ): ChannelCleanup => {
-
     const channel: RealtimeChannel = supabase
-      .channel("messages-realtime")
+      .channel("messages-chat-active")
       .on(
         "postgres_changes" as any,
         { event: "INSERT", schema: "public", table: "messages" },
@@ -64,58 +60,50 @@ export default function useMessageRealTime(): UseMessageRealTimeReturn {
           const msg = payload.new;
 
           const isBetweenUsers =
-            (msg.from_id === user.id && msg.to_id === selectedUser.id) ||
-            (msg.from_id === selectedUser.id && msg.to_id === user.id);
+            (msg.from_id === currentUser.id && msg.to_id === selectedUser.id) ||
+            (msg.from_id === selectedUser.id && msg.to_id === currentUser.id);
 
-          if (isBetweenUsers) {
-            setMessages((prev: Message[]) => [...prev, msg]);
-          }
+          if (!isBetweenUsers) return;
+
+          setMessages((prev) => [...prev, msg]);
         }
       )
       .subscribe();
 
-    return (): void => {
+    return () => {
       supabase.removeChannel(channel);
     };
   };
 
-  const autoOpen = (
-    user: UserData, 
-    selectedUser: UserData | null, 
-    setSelectedUser: SimpleUserSetter
+  const subscribeUnread = (
+    currentUser: UserData,
+    activeUserId: string | null,
+    onUnread: (fromId: string) => void
   ): ChannelCleanup => {
-
     const channel: RealtimeChannel = supabase
-      .channel("auto-open-chat")
+      .channel("messages-unread")
       .on(
         "postgres_changes" as any,
         { event: "INSERT", schema: "public", table: "messages" },
-        async (payload: SupabasePayload) => {
+        (payload: SupabasePayload) => {
           const msg = payload.new;
 
-          // mensagem enviada PARA mim
-          if (msg.to_id === user.id) {
-            // se eu não estou com ele aberto, abre
-            if (!selectedUser || selectedUser.id !== msg.from_id) {
-              const { data } = await supabase
-                .from("queue")
-                .select("*")
-                .eq("id", msg.from_id)
-                .single();
+          if (msg.to_id !== currentUser.id) return
 
-              if (data) {
-                setSelectedUser(data as UserData);
-              }
-            }
-          }
+          if(msg.from_id === activeUserId) return
+
+          onUnread(msg.from_id);
         }
       )
       .subscribe();
 
-    return (): void => {
+    return () => {
       supabase.removeChannel(channel);
     };
   };
 
-  return { creatChannel, autoOpen };
+  return {
+    createMessageChannel,
+    subscribeUnread
+  };
 }

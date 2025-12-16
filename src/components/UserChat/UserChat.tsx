@@ -31,13 +31,12 @@ interface UserChatProps {
 export default function UserChat({
   user,
   selectedUser,
-  setSelectedUser,
 }: UserChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string | "">("");
 
   const { loadMessages, sendMessage } = useMessageSupabase();
-  const { creatChannel, autoOpen } = useMessageRealTime();
+  const { createMessageChannel } = useMessageRealTime();
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -62,15 +61,8 @@ export default function UserChat({
   useEffect(() => {
     if (!user || !selectedUser) return;
 
-    const cleanup = creatChannel(user, selectedUser, setMessages);
+    const cleanup = createMessageChannel(user, selectedUser, setMessages);
     return cleanup;
-  }, [user, selectedUser]);
-
-  // Auto-open de conversa quando alguém envia para mim
-  useEffect(() => {
-    if (!user) return;
-
-    autoOpen(user, selectedUser, setSelectedUser);
   }, [user, selectedUser]);
 
   const handleSendMessage = async (text: string) => {

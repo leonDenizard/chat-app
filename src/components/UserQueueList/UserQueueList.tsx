@@ -15,12 +15,14 @@ interface QueueUser {
 interface UserQueueListProps {
   onSelectUser: (user: QueueUser) => void;
   selectedUserId?: string;
-  setIsAsideOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setIsAsideOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  unread: Record<string, number>;
 }
 export default function UserQueueList({
   onSelectUser,
   selectedUserId,
-  setIsAsideOpen
+  setIsAsideOpen,
+  unread,
 }: UserQueueListProps) {
   const { user } = useUser();
 
@@ -53,7 +55,7 @@ export default function UserQueueList({
     <section onClick={() => setIsAsideOpen(false)}>
       {users.map((u) => {
         const isSelected = u.id === selectedUserId;
-
+        const unreadCount = unread[u.id] ?? 0;
         return (
           <motion.div
             layout
@@ -70,6 +72,22 @@ export default function UserQueueList({
                 layoutId="selected-indicator"
                 className="absolute right-0 top-0 h-full w-1 bg-violet-500 rounded-full"
               />
+            )}
+            
+            {unreadCount > 0 && (
+              <span
+                className="
+                  absolute right-4
+                  text-xs h-6 w-6
+                  flex items-center justify-center
+                  font-semibold
+                  bg-violet-500
+                  text-white
+                  rounded-full
+                "
+              >
+                {unreadCount}
+              </span>
             )}
             <img
               src={u.avatar || getRandomAvatar()}

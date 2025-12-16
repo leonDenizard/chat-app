@@ -6,7 +6,9 @@ import UserQueueList from "@/components/UserQueueList/UserQueueList";
 import { useTheme } from "@/context/ThemeProvider";
 import { useUser } from "@/context/UserProvider";
 import { useKickUser } from "@/hooks/useKickUser";
+import useMessageRealTime from "@/hooks/useMessageRealTime";
 import useQueue from "@/hooks/useQueue";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useUserSupabase } from "@/hooks/useUserSupabase";
 import { Settings, Users, Moon, Sun, TimerReset, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -32,6 +34,9 @@ export default function Chat() {
 
   const { getUser, removeUser } = useUserSupabase();
 
+  const unread = useUnreadMessages();
+  const realtime = useMessageRealTime();
+
   useKickUser({
     pollMs: 10000,
     onKicked: () => {
@@ -55,6 +60,24 @@ export default function Chat() {
       }
     };
   }, []);
+  
+  useEffect(() => {
+    if (!user) return;
+
+    const cleanup = realtime.subscribeUnread(
+      user,
+      selectedUser?.id ?? null,
+      unread.increment
+    );
+
+    return cleanup;
+  }, [user, selectedUser?.id]);
+  
+  useEffect(() => {
+    if (selectedUser) {
+      unread.clear(selectedUser.id);
+    }
+  }, [selectedUser]);
 
   return (
     <div className="h-dvh flex bg-zinc-50 dark:bg-zinc-800">
@@ -87,8 +110,12 @@ export default function Chat() {
           <div className="flex-1 overflow-y-auto">
             <UserQueueList
               setIsAsideOpen={setIsAsideOpen}
-              onSelectUser={setSelectedUser}
+              onSelectUser={(u) => {
+                setSelectedUser(u);
+                unread.clear(u.id);
+              }}
               selectedUserId={selectedUser?.id}
+              unread={unread.unread}
             />
           </div>
         </div>
