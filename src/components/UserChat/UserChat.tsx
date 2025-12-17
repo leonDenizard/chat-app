@@ -3,7 +3,9 @@ import { useMessageSupabase } from "@/hooks/useMessageSupabase";
 import { Mic, Paperclip, SendHorizontal, Smile } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ChatBubble from "./ChatBubble";
-
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import "../../custom_style/loader.css"
+import Loader from "../ui/Loader";
 interface UserData {
   id: string;
   name: string;
@@ -28,10 +30,7 @@ interface UserChatProps {
   setSelectedUser: (user: UserData | null) => void;
 }
 
-export default function UserChat({
-  user,
-  selectedUser,
-}: UserChatProps) {
+export default function UserChat({ user, selectedUser }: UserChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string | "">("");
 
@@ -93,7 +92,12 @@ export default function UserChat({
 
   const handleInputText = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
+    notifyTyping();
   };
+  const { isTyping, notifyTyping } = useTypingIndicator(
+    user?.id ?? null,
+    selectedUser?.id ?? null
+  );
   return (
     <div className="relative flex flex-col justify-between h-full w-full">
       <div
@@ -134,7 +138,11 @@ export default function UserChat({
         dark:from-zinc-800
         to-transparent z-10"
       ></div>
-
+      
+      {isTyping && (
+        <Loader/>
+      )}
+    
       <form
         onSubmit={(e) => {
           e.preventDefault();
