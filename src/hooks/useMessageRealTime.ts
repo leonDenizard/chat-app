@@ -30,7 +30,6 @@ interface SupabasePayload {
 }
 
 interface UseMessageRealtimeReturn {
-  
   createMessageChannel: (
     currentUser: UserData,
     selectedUser: UserData,
@@ -40,7 +39,14 @@ interface UseMessageRealtimeReturn {
   subscribeUnread: (
     currentUser: UserData,
     activeUserId: string | null,
-    onUnread: (fromId: string) => void
+    handlers: {
+      onUnread: (fromId: string) => void;
+      onLastMessage: (
+        fromId: string,
+        content: string,
+        createdAt: string
+      ) => void;
+    }
   ) => ChannelCleanup;
 }
 
@@ -76,31 +82,42 @@ export default function useMessageRealtime(): UseMessageRealtimeReturn {
   };
 
   const subscribeUnread = (
-    currentUser: UserData,
-    activeUserId: string | null,
-    onUnread: (fromId: string) => void
-  ): ChannelCleanup => {
-    const channel: RealtimeChannel = supabase
-      .channel("messages-unread")
-      .on(
-        "postgres_changes" as any,
-        { event: "INSERT", schema: "public", table: "messages" },
-        (payload: SupabasePayload) => {
-          const msg = payload.new;
+  currentUser: UserData,
+  activeUserId: string | null,
+  handlers: {
+    onUnread: (fromId: string) => void;
+    onLastMessage: (
+      fromId: string,
+      content: string,
+      createdAt: string
+    ) => void;
+  }
+): ChannelCleanup => {
+  const { onUnread, onLastMessage } = handlers;
 
-          if (msg.to_id !== currentUser.id) return
+  const channel = supabase
+    .channel("messages-unread")
+    .on(
+      "postgres_changes" as any,
+      { event: "INSERT", schema: "public", table: "messages" },
+      (payload: SupabasePayload) => {
+        const msg = payload.new;
 
-          if(msg.from_id === activeUserId) return
+        if (msg.to_id !== currentUser.id) return;
 
+        
+        if (msg.from_id !== activeUserId) {
           onUnread(msg.from_id);
+          onLastMessage(msg.from_id, msg.content, msg.created_at);
         }
-      )
-      .subscribe();
+      }
+    )
+    .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  return () => {
+    supabase.removeChannel(channel);
   };
+};
 
   return {
     createMessageChannel,

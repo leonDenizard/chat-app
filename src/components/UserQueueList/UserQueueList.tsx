@@ -18,12 +18,14 @@ interface UserQueueListProps {
   selectedUserId?: string;
   setIsAsideOpen: React.Dispatch<React.SetStateAction<boolean>>;
   unread: Record<string, number>;
+  lastMessages: Record<string, { content: string; created_at: string }>;
 }
 export default function UserQueueList({
   onSelectUser,
   selectedUserId,
   setIsAsideOpen,
   unread,
+  lastMessages,
 }: UserQueueListProps) {
   const { user } = useUser();
 
@@ -36,6 +38,12 @@ export default function UserQueueList({
       </section>
     );
   }
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (a.id === user?.id) return -1;
+    if (b.id === user?.id) return 1;
+    return 0;
+  });
 
   if (error) {
     return (
@@ -54,16 +62,17 @@ export default function UserQueueList({
 
   return (
     <section onClick={() => setIsAsideOpen(false)}>
-      {users.map((u) => {
+      {sortedUsers.map((u) => {
         const isSelected = u.id === selectedUserId;
         const unreadCount = unread[u.id] ?? 0;
+        const lastMsg = lastMessages[u.id]?.content;
         return (
           <motion.div
             layout
             key={u.id}
             className={`
               relative flex items-center gap-3 p-4 cursor-pointer dark:text-white
-              hover:bg-zinc-200 hover:dark:bg-zinc-200/5 transition-colors duration-300
+              hover:bg-zinc-200 hover:dark:bg-zinc-200/5 transition-colors duration-300 group
               ${isSelected ? "bg-violet-100 dark:bg-zinc-900/30" : ""}
             `}
             onClick={() => onSelectUser(u)}
@@ -74,24 +83,54 @@ export default function UserQueueList({
                 className="absolute right-0 top-0 h-full w-1 bg-violet-500 rounded-full"
               />
             )}
-            
-            {unreadCount > 0 && (
-              <UnreadBadge count={unreadCount} />
-            )}
+
+            {unreadCount > 0 && <UnreadBadge count={unreadCount} />}
             <img
               src={u.avatar || getRandomAvatar()}
               alt={`${u.name} profile picture`}
               className="w-12 h-12 rounded-lg"
             />
 
-            <div>
+            <motion.div
+              layout={"position"}
+              transition={{ duration: 0.25, ease: "easeIn" }}
+              className="flex flex-col"
+            >
               <p className="font-semibold text-zinc-800 dark:text-zinc-200">
                 {u.name}
               </p>
               {u.id === user?.id && (
                 <p className="text-sm text-gray-500 dark:text-zinc-400">You</p>
               )}
-            </div>
+              <div className="relative max-w-48 overflow-hidden">
+                <motion.p
+                  key={lastMsg}
+                  initial={{ y: 12, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -12, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="text-sm text-zinc-500 dark:text-zinc-500 truncate"
+                >
+                  {lastMsg}
+                </motion.p>
+
+                <div
+                  className="
+                    pointer-events-none
+                    absolute top-0 right-0 h-full w-10
+
+                    bg-gradient-to-l
+                    from-zinc-100 dark:from-zinc-800
+                    to-transparent
+
+                    group-hover:from-zinc-200
+                    dark:group-hover:from-zinc-200/0
+
+                    transition-colors duration-200
+                  "
+                />
+              </div>
+            </motion.div>
           </motion.div>
         );
       })}

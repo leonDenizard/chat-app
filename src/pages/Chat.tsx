@@ -6,6 +6,7 @@ import UserQueueList from "@/components/UserQueueList/UserQueueList";
 import { useTheme } from "@/context/ThemeProvider";
 import { useUser } from "@/context/UserProvider";
 import { useKickUser } from "@/hooks/useKickUser";
+import { useLastMessages } from "@/hooks/useLastMessages";
 import useMessageRealTime from "@/hooks/useMessageRealTime";
 import useQueue from "@/hooks/useQueue";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -36,6 +37,8 @@ export default function Chat() {
 
   const unread = useUnreadMessages();
   const realtime = useMessageRealTime();
+  const lastMessages = useLastMessages();
+  
 
   useKickUser({
     pollMs: 10000,
@@ -62,16 +65,19 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+  if (!user) return;
 
-    const cleanup = realtime.subscribeUnread(
-      user,
-      selectedUser?.id ?? null,
-      unread.increment
-    );
+  const cleanup = realtime.subscribeUnread(
+    user,
+    selectedUser?.id ?? null,
+    {
+      onUnread: unread.increment,
+      onLastMessage: lastMessages.update
+    }
+  );
 
-    return cleanup;
-  }, [user, selectedUser?.id]);
+  return cleanup;
+}, [user, selectedUser?.id]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -117,9 +123,11 @@ export default function Chat() {
               onSelectUser={(u) => {
                 setSelectedUser(u);
                 unread.clear(u.id);
+                lastMessages.clear(u.id)
               }}
               selectedUserId={selectedUser?.id}
               unread={unread.unread}
+              lastMessages={lastMessages.last}
             />
           </div>
         </div>
@@ -129,7 +137,7 @@ export default function Chat() {
 
       {/* Área principal do chat */}
       <main className="flex-1 flex flex-col bg-zinc-100 dark:bg-zinc-800">
-        <header className="h-20 border-b-2 dark:bordeg-zinc-700 bg-zinc-100 dark:bg-zinc-800 flex items-center px-4">
+        <header className="h-20 border-b-2 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 flex items-center px-4">
           <Menu
             className="md:hidden mr-2 cursor-pointer h-10 w-12 p-2 text-zinc-700 dark:text-zinc-200 hover:dark:text-zinc-100 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-lg transition-colors duration-300"
             onClick={() => setIsAsideOpen(true)}
