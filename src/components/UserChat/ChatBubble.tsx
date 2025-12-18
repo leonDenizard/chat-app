@@ -9,7 +9,7 @@ interface ChatBubbleProps {
 }
 
 export default function ChatBubble({
-  message,
+  // message,
   isMe,
   showAvatar,
   avatar,
