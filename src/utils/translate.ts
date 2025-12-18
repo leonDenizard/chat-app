@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabse";
+
 export async function translate(text: string, target: string) {
   const res = await fetch(
     "https://gxksocnryelvgzcjtnnr.supabase.co/functions/v1/hyper-function",
@@ -23,3 +25,16 @@ export async function translate(text: string, target: string) {
   const data = await res.json();
   return data.text;
 }
+
+export const translateInBackground = async (messageId: string, text: string) => {
+  try {
+    const translated = await translate(text, "en-US");
+
+    await supabase
+      .from("messages")
+      .update({ translated })
+      .eq("id", messageId);
+  } catch (e) {
+    console.error("Erro ao traduzir em background", e);
+  }
+};

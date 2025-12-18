@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { Languages } from "lucide-react";
+import ShinyText from "../ui/ShinyText";
 
 interface ChatBubbleProps {
   message: string;
@@ -6,14 +8,16 @@ interface ChatBubbleProps {
   showAvatar: boolean;
   avatar?: string | null;
   translated?: string;
+  isTranslateEnabled?: boolean;
 }
 
 export default function ChatBubble({
-  // message,
+  message,
   isMe,
   showAvatar,
   avatar,
-  translated
+  translated,
+  isTranslateEnabled,
 }: ChatBubbleProps) {
   const bubbleVariants = {
     hidden: {
@@ -26,16 +30,16 @@ export default function ChatBubble({
     },
   };
 
+  const showTranslation = isTranslateEnabled && translated;
+  const isTranslating = isTranslateEnabled && !translated;
+
   return (
     <motion.div
       layout
       initial="hidden"
       animate="visible"
       variants={bubbleVariants}
-      transition={{
-        duration: 0.18,
-        ease: "easeOut",
-      }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
       className={`flex gap-2 my-1 ${isMe ? "justify-end" : "justify-start"}`}
     >
       {/* Avatar esquerda */}
@@ -49,25 +53,37 @@ export default function ChatBubble({
 
       {!isMe && !showAvatar && <div className="w-8 shrink-0" />}
 
-      {/* Bubble */}
-      {/* <div
-        className={`relative p-2 max-w-[80%] lg:max-w-[40%] xl:max-w-[35%] break-all ${
-          isMe
-            ? "bg-violet-500 text-white rounded px-3"
-            : "bg-zinc-700 text-white rounded px-3"
-        } ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}`}
-      >
-        {message}
-      </div> */}
-
       <div
-        className={`relative p-2 max-w-[80%] lg:max-w-[40%] xl:max-w-[35%] break-all ${
-          isMe
-            ? "bg-violet-500 text-white rounded px-3"
-            : "bg-zinc-700 text-white rounded px-3"
-        } ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}`}
+        className={`flex flex-col gap-1 ${isMe ? "items-end" : "items-start"}`}
       >
-        {translated}
+        {/* Bubble */}
+        <div
+          className={`
+      relative p-2 break-all rounded px-3
+      max-w-[90%] md:max-w-full
+      ${isMe ? "bg-violet-500 text-white" : "bg-zinc-700 text-white"}
+      ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}
+    `}
+        >
+          {showTranslation && translated ? translated : message}
+        </div>
+
+        {isTranslating && (
+          <div
+            className={`
+        flex items-center gap-2 text-xs italic opacity-70 select-none
+        ${isMe ? "self-end text-right" : "self-start text-left"}
+      `}
+          >
+            <ShinyText
+              text="Calm your heart, we are translating..."
+              disabled={false}
+              speed={3}
+              className="leading-none"
+            />
+            <Languages size={14} className="opacity-70 shrink-0" />
+          </div>
+        )}
       </div>
 
       {/* Avatar direita */}

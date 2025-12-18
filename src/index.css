@@ -162,3 +162,16 @@
 .animate-shake {
   animation: shake-badge 0.35s ease-in-out;
 }
+
+@theme {
+  @keyframes shine {
+    0% {
+      background-position: 100%;
+    }
+    100% {
+      background-position: -100%;
+    }
+  }
+
+  --animate-shine: shine 5s linear infinite;
+}

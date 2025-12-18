@@ -75,6 +75,27 @@ export default function useMessageRealtime(): UseMessageRealtimeReturn {
           setMessages((prev) => [...prev, msg]);
         }
       )
+      .on(
+        "postgres_changes" as any,
+        { event: "UPDATE", schema: "public", table: "messages" },
+        (payload: SupabasePayload) => {
+          const updated = payload.new;
+
+          const isBetweenUsers =
+            (updated.from_id === currentUser.id &&
+              updated.to_id === selectedUser.id) ||
+            (updated.from_id === selectedUser.id &&
+              updated.to_id === currentUser.id);
+
+          if (!isBetweenUsers) return;
+
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === updated.id ? { ...m, ...updated } : m
+            )
+          );
+        }
+      )
       .subscribe();
 
     return () => {
@@ -83,42 +104,43 @@ export default function useMessageRealtime(): UseMessageRealtimeReturn {
   };
 
   const subscribeUnread = (
-  currentUser: UserData,
-  activeUserId: string | null,
-  handlers: {
-    onUnread: (fromId: string) => void;
-    onLastMessage: (
-      fromId: string,
-      content: string,
-      createdAt: string
-    ) => void;
-  }
-): ChannelCleanup => {
-  const { onUnread, onLastMessage } = handlers;
+    currentUser: UserData,
+    activeUserId: string | null,
+    handlers: {
+      onUnread: (fromId: string) => void;
+      onLastMessage: (
+        fromId: string,
+        content: string,
+        createdAt: string
+      ) => void;
+    }
+  ): ChannelCleanup => {
+    const { onUnread, onLastMessage } = handlers;
 
-  const channel = supabase
-    .channel("messages-unread")
-    .on(
-      "postgres_changes" as any,
-      { event: "INSERT", schema: "public", table: "messages" },
-      (payload: SupabasePayload) => {
-        const msg = payload.new;
+    const channel = supabase
+      .channel("messages-unread")
+      .on(
+        "postgres_changes" as any,
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload: SupabasePayload) => {
+          const msg = payload.new;
 
-        if (msg.to_id !== currentUser.id) return;
+          if (msg.to_id !== currentUser.id) return;
 
-        
-        if (msg.from_id !== activeUserId) {
-          onUnread(msg.from_id);
-          onLastMessage(msg.from_id, msg.content, msg.created_at);
+
+          if (msg.from_id !== activeUserId) {
+            onUnread(msg.from_id);
+            onLastMessage(msg.from_id, msg.content, msg.created_at);
+          }
         }
-      }
-    )
-    .subscribe();
+      )
 
-  return () => {
-    supabase.removeChannel(channel);
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   };
-};
 
   return {
     createMessageChannel,
