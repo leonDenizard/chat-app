@@ -4,8 +4,9 @@ import { Mic, Paperclip, SendHorizontal, Smile } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ChatBubble from "./ChatBubble";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
-import "../../custom_style/loader.css"
+import "../../custom_style/loader.css";
 import Loader from "../ui/Loader";
+import { translate } from "@/utils/translate";
 interface UserData {
   id: string;
   name: string;
@@ -19,6 +20,7 @@ interface Message {
   content: string;
   from_id: string;
   to_id: string;
+  translated?: string;
   created_at: string;
   updated_at: string;
   read_at?: string | null;
@@ -67,9 +69,19 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || !user || !selectedUser) return;
 
+    let translated = null;
+
+    try {
+      translated = await translate(text, "en-US");
+      console.log("Translated", translated)
+    } catch (e) {
+      console.error("Falha na tradução", e);
+    }
+
     const result = await sendMessage({
       text: text.trim(),
       fromUserId: user.id,
+      translated,
       toUserId: selectedUser.id,
     });
 
@@ -98,6 +110,7 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
     user?.id ?? null,
     selectedUser?.id ?? null
   );
+
   return (
     <div className="relative flex flex-col justify-between h-full w-full">
       <div
@@ -126,6 +139,7 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
               isMe={isMe}
               showAvatar={showAvatar}
               avatar={avatar}
+              translated={msg.translated}
             />
           );
         })}
@@ -138,11 +152,9 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
         dark:from-zinc-800
         to-transparent z-10"
       ></div>
-      
-      {isTyping && (
-        <Loader/>
-      )}
-    
+
+      {isTyping && <Loader />}
+
       <form
         onSubmit={(e) => {
           e.preventDefault();

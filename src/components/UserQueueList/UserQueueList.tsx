@@ -80,7 +80,7 @@ export default function UserQueueList({
             {isSelected && (
               <motion.div
                 layoutId="selected-indicator"
-                className="absolute right-0 top-0 h-full w-1 bg-violet-500 rounded-full"
+                className="absolute right-0 top-0 h-full w-1 bg-violet-500 shadow-2xl shadow-2xl-violet-500"
               />
             )}
 

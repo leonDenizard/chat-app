@@ -5,6 +5,7 @@ interface ChatBubbleProps {
   isMe: boolean;
   showAvatar: boolean;
   avatar?: string | null;
+  translated?: string;
 }
 
 export default function ChatBubble({
@@ -12,6 +13,7 @@ export default function ChatBubble({
   isMe,
   showAvatar,
   avatar,
+  translated
 }: ChatBubbleProps) {
   const bubbleVariants = {
     hidden: {
@@ -48,7 +50,7 @@ export default function ChatBubble({
       {!isMe && !showAvatar && <div className="w-8 shrink-0" />}
 
       {/* Bubble */}
-      <div
+      {/* <div
         className={`relative p-2 max-w-[80%] lg:max-w-[40%] xl:max-w-[35%] break-all ${
           isMe
             ? "bg-violet-500 text-white rounded px-3"
@@ -56,6 +58,16 @@ export default function ChatBubble({
         } ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}`}
       >
         {message}
+      </div> */}
+
+      <div
+        className={`relative p-2 max-w-[80%] lg:max-w-[40%] xl:max-w-[35%] break-all ${
+          isMe
+            ? "bg-violet-500 text-white rounded px-3"
+            : "bg-zinc-700 text-white rounded px-3"
+        } ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}`}
+      >
+        {translated}
       </div>
 
       {/* Avatar direita */}

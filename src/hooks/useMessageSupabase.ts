@@ -4,6 +4,7 @@ interface SendMessageData {
   text: string;
   fromUserId: string;
   toUserId: string;
+  translated?: string
 }
 
 interface LoadMessagesData {
@@ -17,6 +18,7 @@ interface Message {
   content: string;
   from_id: string;
   to_id: string;
+  translated?: string;
   created_at: string;
   updated_at: string;
   read_at?: string | null;
@@ -63,6 +65,7 @@ export function useMessageSupabase() {
             from_id: data.fromUserId,
             to_id: data.toUserId,
             content: data.text.trim(),
+            translated: data.translated,
           })
           .select()
           .single();

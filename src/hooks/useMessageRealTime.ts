@@ -18,6 +18,7 @@ export interface Message {
   created_at: string;
   updated_at: string;
   read_at?: string | null;
+  translated?: string
 }
 
 type MessageSetter = Dispatch<SetStateAction<Message[]>>;
