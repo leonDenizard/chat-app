@@ -7,6 +7,8 @@ import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import "../../custom_style/loader.css";
 import Loader from "../ui/Loader";
 import { translateInBackground } from "@/utils/translate";
+import { LANGUAGES, type LanguageOption } from "@/utils/flagsUtils";
+
 interface UserData {
   id: string;
   name: string;
@@ -37,6 +39,9 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
   const [inputValue, setInputValue] = useState<string | "">("");
   const [isSending, setIsSending] = useState<boolean>(false);
   const [isTranslateEnabled, setIsTranslateEnabled] = useState<boolean>(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<LanguageOption | null>(null);
 
   const { loadMessages, sendMessage } = useMessageSupabase();
   const { createMessageChannel } = useMessageRealTime();
@@ -68,36 +73,36 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
     return cleanup;
   }, [user, selectedUser]);
 
-const handleSendMessage = async (text: string) => {
-  if (isSending || !text.trim() || !user || !selectedUser) return;
+  const handleSendMessage = async (text: string) => {
+    if (isSending || !text.trim() || !user || !selectedUser) return;
 
-  setIsSending(true);
+    setIsSending(true);
 
-  try {
-    const { message, error } = await sendMessage({
-      text: text.trim(),
-      fromUserId: user.id,
-      toUserId: selectedUser.id,
-    });
+    try {
+      const { message, error } = await sendMessage({
+        text: text.trim(),
+        fromUserId: user.id,
+        toUserId: selectedUser.id,
+      });
 
-    if (error || !message) {
-      console.error(error);
-      return;
+      if (error || !message) {
+        console.error(error);
+        return;
+      }
+
+      translateInBackground(
+        message.id,
+        message.content,
+        selectedLanguage?.code ?? "en-US"
+      );
+
+      setInputValue("");
+    } catch (e) {
+      console.error("Error send message", e);
+    } finally {
+      setIsSending(false);
     }
-
-  
-    translateInBackground(message.id, message.content);
-
-
-    setInputValue("");
-  } catch (e) {
-    console.error("Error send message", e);
-  } finally {
-    setIsSending(false);
-  }
-};
-
-
+  };
 
   const chatRef = useRef<HTMLDivElement | null>(null);
 
@@ -139,7 +144,7 @@ const handleSendMessage = async (text: string) => {
           const showAvatar = !prevMsg || prevMsg.from_id !== msg.from_id;
 
           const avatar = isMe ? user?.avatar : selectedUser?.avatar;
-          console.log(msg?.translated)
+          console.log(msg?.translated);
 
           return (
             <ChatBubble
@@ -177,15 +182,46 @@ const handleSendMessage = async (text: string) => {
       >
         <Paperclip className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
 
-        <Languages
-          onClick={() => setIsTranslateEnabled((prev) => !prev)}
-          className={`shrink-0 h-12 w-12 px-3 rounded-full cursor-pointer
+        <div className="relative">
+          <Languages
+            onClick={() => setIsLanguageMenuOpen((prev) => !prev)}
+            className={`shrink-0 h-12 w-12 px-3 rounded-full cursor-pointer
           ${
-            isTranslateEnabled
+            selectedLanguage
               ? "bg-violet-500 text-white"
-              : "bg-gray-200 text-zinc-200 dark:bg-zinc-900/50"
+              : "bg-gray-200 text-zinc-700 dark:bg-zinc-900/50"
           }`}
-        />
+          />
+
+          {isLanguageMenuOpen && (
+            <div
+              className="absolute bottom-14 left-0
+              bg-white dark:bg-zinc-900
+              shadow-lg rounded-xl
+              flex flex-col gap-2 z-50"
+            >
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    setSelectedLanguage(lang);
+
+                    if (lang.translate === false) {
+                      setIsTranslateEnabled(false);
+                    } else {
+                      setIsTranslateEnabled(true);
+                    }
+
+                    setIsLanguageMenuOpen(false);
+                  }}
+                  className={`rounded-lg transition w-12 p-2`}
+                >
+                  <img src={lang.flag} alt={lang.label} className="w-20" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="relative w-full">
           <input

@@ -26,9 +26,9 @@ export async function translate(text: string, target: string) {
   return data.text;
 }
 
-export const translateInBackground = async (messageId: string, text: string) => {
+export const translateInBackground = async (messageId: string, text: string, lang: string) => {
   try {
-    const translated = await translate(text, "en-US");
+    const translated = await translate(text, lang);
 
     await supabase
       .from("messages")

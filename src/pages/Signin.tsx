@@ -39,7 +39,7 @@ export default function Signin() {
   };
 
   return (
-    <div className="relative h-dvh flex items-center justify-center bg-zinc-950">
+    <div className="relative h-dvh flex items-center justify-center bg-zinc-950 overflow-hidden">
       <div className="fixed inset-0 w-full h-full z-0">
         <LightRays
           raysOrigin="top-center"
