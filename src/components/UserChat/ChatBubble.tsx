@@ -43,7 +43,7 @@ export default function ChatBubble({
         <img
           src={avatar || "/av1.png"}
           alt=""
-          className="w-8 h-8 rounded-md shrink-0 mt-1 bg-zinc-700 animate-pulse"
+          className="w-8 h-8 rounded-md shrink-0 mt-1"
         />
       )}
 
@@ -56,7 +56,6 @@ export default function ChatBubble({
         <div
           className={`
             relative p-2 break-all rounded px-3
-            max-w-[90%] md:max-w-full
             ${isMe ? "bg-violet-500 text-white" : "bg-zinc-700 text-white"}
             ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}
           `}
