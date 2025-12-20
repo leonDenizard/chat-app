@@ -9,6 +9,7 @@ interface ChatBubbleProps {
   avatar?: string | null;
   translated?: string;
   isTranslateEnabled?: boolean;
+  isTranslating?: boolean;
 }
 
 export default function ChatBubble({
@@ -18,20 +19,15 @@ export default function ChatBubble({
   avatar,
   translated,
   isTranslateEnabled,
+  isTranslating,
 }: ChatBubbleProps) {
   const bubbleVariants = {
-    hidden: {
-      opacity: 0,
-      y: 12,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-    },
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0 },
   };
 
   const showTranslation = isTranslateEnabled && translated;
-  const isTranslating = isTranslateEnabled && !translated;
+  const localIsTranslating = isTranslateEnabled && !translated && isTranslating;
 
   return (
     <motion.div
@@ -45,9 +41,13 @@ export default function ChatBubble({
       {/* Avatar esquerda */}
       {!isMe && showAvatar && (
         <img
+          width={32}
+          height={32}
           src={avatar || "/av1.png"}
           alt=""
-          className="w-8 h-8 rounded-md shrink-0 mt-1"
+          className="w-8 h-8 rounded-md shrink-0 mt-1 bg-zinc-700 animate-pulse"
+          loading="lazy"
+          decoding="async"
         />
       )}
 
@@ -59,21 +59,21 @@ export default function ChatBubble({
         {/* Bubble */}
         <div
           className={`
-      relative p-2 break-all rounded px-3
-      max-w-[90%] md:max-w-full
-      ${isMe ? "bg-violet-500 text-white" : "bg-zinc-700 text-white"}
-      ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}
-    `}
+            relative p-2 break-all rounded px-3
+            max-w-[90%] md:max-w-full
+            ${isMe ? "bg-violet-500 text-white" : "bg-zinc-700 text-white"}
+            ${showAvatar ? (isMe ? "bubble-right" : "bubble-left") : ""}
+          `}
         >
-          {showTranslation && translated ? translated : message}
+          {showTranslation ? translated : message}
         </div>
 
-        {isTranslating && (
+        {localIsTranslating && (
           <div
             className={`
-        flex items-center gap-2 text-xs italic opacity-70 select-none
-        ${isMe ? "self-end text-right" : "self-start text-left"}
-      `}
+              flex items-center gap-2 text-xs italic opacity-70 select-none
+              ${isMe ? "self-end text-right" : "self-start text-left"}
+            `}
           >
             <ShinyText
               text="Calm your heart, we are translating..."

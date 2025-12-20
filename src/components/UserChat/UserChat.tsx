@@ -6,8 +6,8 @@ import ChatBubble from "./ChatBubble";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import "../../custom_style/loader.css";
 import Loader from "../ui/Loader";
-import { translateInBackground } from "@/utils/translate";
 import { LANGUAGES, type LanguageOption } from "@/utils/flagsUtils";
+import { useChatTranslation } from "@/hooks/useChatTranslation";
 
 interface UserData {
   id: string;
@@ -38,13 +38,23 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string | "">("");
   const [isSending, setIsSending] = useState<boolean>(false);
-  const [isTranslateEnabled, setIsTranslateEnabled] = useState<boolean>(false);
+
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] =
-    useState<LanguageOption | null>(null);
+
+  useState<LanguageOption | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { loadMessages, sendMessage } = useMessageSupabase();
   const { createMessageChannel } = useMessageRealTime();
+
+  const {
+    selectedLanguage,
+    isTranslateEnabled,
+    enableTranslation,
+    getTranslation,
+    getCachedTranslation,
+    isTranslating,
+  } = useChatTranslation();
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -90,13 +100,10 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
         return;
       }
 
-      translateInBackground(
-        message.id,
-        message.content,
-        selectedLanguage?.code ?? "en-US"
-      );
-
       setInputValue("");
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
     } catch (e) {
       console.error("Error send message", e);
     } finally {
@@ -118,7 +125,21 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
   const handleInputText = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
     notifyTyping();
+    inputRef.current?.focus();
   };
+
+  useEffect(() => {
+    if (!isTranslateEnabled || !selectedLanguage) return;
+
+    messages.forEach((msg) => {
+      const cached = getCachedTranslation(msg.id);
+
+      if (!cached) {
+        getTranslation(msg.id, msg.content);
+      }
+    });
+  }, [isTranslateEnabled, selectedLanguage, messages]);
+
   const { isTyping, notifyTyping } = useTypingIndicator(
     user?.id ?? null,
     selectedUser?.id ?? null
@@ -143,18 +164,18 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
           const prevMsg = messages[index - 1];
           const showAvatar = !prevMsg || prevMsg.from_id !== msg.from_id;
 
-          const avatar = isMe ? user?.avatar : selectedUser?.avatar;
-          console.log(msg?.translated);
+          const cached = getCachedTranslation(msg.id);
 
           return (
             <ChatBubble
               key={msg.id}
               message={msg.content}
+              translated={cached}
+              isTranslateEnabled={isTranslateEnabled}
+              isTranslating={isTranslating(msg.id)}
               isMe={isMe}
               showAvatar={showAvatar}
-              avatar={avatar}
-              translated={msg.translated}
-              isTranslateEnabled={isTranslateEnabled}
+              avatar={isMe ? user?.avatar : selectedUser?.avatar}
             />
           );
         })}
@@ -173,10 +194,7 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const text = formData.get("message") as string;
-          handleSendMessage(text);
-          e.currentTarget.reset();
+          handleSendMessage(inputValue);
         }}
         className="flex gap-2 mt-2 items-center shrink-0 mb-1 md: px-4"
       >
@@ -189,7 +207,7 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
           ${
             selectedLanguage
               ? "bg-violet-500 text-white"
-              : "bg-gray-200 text-zinc-700 dark:bg-zinc-900/50"
+              : "bg-gray-200 text-zinc-700 dark:text-gray-100 dark:bg-zinc-900/50"
           }`}
           />
 
@@ -204,14 +222,7 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
                 <button
                   key={lang.code}
                   onClick={() => {
-                    setSelectedLanguage(lang);
-
-                    if (lang.translate === false) {
-                      setIsTranslateEnabled(false);
-                    } else {
-                      setIsTranslateEnabled(true);
-                    }
-
+                    enableTranslation(lang);
                     setIsLanguageMenuOpen(false);
                   }}
                   className={`rounded-lg transition w-12 p-2`}
@@ -225,16 +236,20 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
 
         <div className="relative w-full">
           <input
-            disabled={isSending}
+            ref={inputRef}
             name="message"
             placeholder={isSending ? "Sending message..." : "Type a message..."}
             value={inputValue}
             onChange={handleInputText}
-            className={`relative w-full h-12 flex-1 pl-4 pr-12 bg-gray-200 text-zinc-800
-             dark:text-white placeholder:text-zinc-600 dark:bg-zinc-900/50 rounded-full focus:dark:outline-none  ${
-               isSending ? "opacity-60 cursor-not-allowed" : ""
-             }`}
+            className={`
+              relative w-full h-12 flex-1 pl-4 pr-12
+              bg-gray-200 text-zinc-800
+              dark:text-white dark:bg-zinc-900/50
+              rounded-full focus:outline-none focus:ring-0
+              ${isSending ? "opacity-60" : ""}
+            `}
           />
+
           <Mic className=" absolute right-1 top-0 h-12 w-12 px-3 rounded-full text-zinc-700 dark:text-gray-100 cursor-not-allowed" />
         </div>
 
