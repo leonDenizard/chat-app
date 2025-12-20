@@ -46,8 +46,6 @@ export default function ChatBubble({
           src={avatar || "/av1.png"}
           alt=""
           className="w-8 h-8 rounded-md shrink-0 mt-1 bg-zinc-700 animate-pulse"
-          loading="lazy"
-          decoding="async"
         />
       )}
 
