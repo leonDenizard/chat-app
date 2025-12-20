@@ -41,8 +41,6 @@ export default function ChatBubble({
       {/* Avatar esquerda */}
       {!isMe && showAvatar && (
         <img
-          width={32}
-          height={32}
           src={avatar || "/av1.png"}
           alt=""
           className="w-8 h-8 rounded-md shrink-0 mt-1 bg-zinc-700 animate-pulse"
