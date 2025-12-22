@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LightRays from "@/components/ui/LightRays";
+import { Spinner } from "@/components/ui/spinner";
 import TextType from "@/components/ui/TextType";
 import { useUser } from "@/context/UserProvider";
 import { useUserSupabase } from "@/hooks/useUserSupabase";
@@ -112,7 +113,13 @@ export default function Signin() {
               disabled={isSubmitting}
               className="w-full text-black bg-zinc-300 hover:bg-zinc-100 transition-all cursor-pointer p-6"
             >
-              {isSubmitting ? "Entrando..." : "Entrar"}
+              {isSubmitting ? (
+                <div className="flex items-center gap-2.5">
+                  Entrando... 
+                  <Spinner className="text-zinc-950"/> 
+                </div> 
+              ) : "Entrar"}
+              
             </Button>
           </form>
         </div>

@@ -84,7 +84,7 @@ export default function Chat() {
       unread.clear(selectedUser.id);
     }
   }, [selectedUser]);
-
+  
   return (
     <div className="h-dvh flex bg-zinc-50 dark:bg-zinc-800">
       {/* Sidebar */}

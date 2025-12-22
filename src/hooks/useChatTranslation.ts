@@ -67,7 +67,7 @@ export function useChatTranslation() {
 
         return translated;
       } catch (err) {
-        console.error("Erro ao traduzir mensagem", err);
+        console.error("Error translating message", err);
         return null;
       } finally {
         stopTranslating(messageId);

@@ -144,7 +144,6 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
     user?.id ?? null,
     selectedUser?.id ?? null
   );
-
   return (
     <div className="relative flex flex-col justify-between h-full w-full">
       <div
@@ -201,20 +200,25 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
         <Paperclip className="shrink-0 h-12 w-12 px-3 rounded-full dark:bg-zinc-900/50 bg-gray-200 dark:text-gray-100 text-zinc-700 cursor-not-allowed" />
 
         <div className="relative">
-          <Languages
-            onClick={() => setIsLanguageMenuOpen((prev) => !prev)}
-            className={`shrink-0 h-12 w-12 px-3 rounded-full cursor-pointer
-          ${
-            selectedLanguage
-              ? "bg-violet-500 text-white"
-              : "bg-gray-200 text-zinc-700 dark:text-gray-100 dark:bg-zinc-900/50"
-          }`}
-          />
+          {selectedLanguage ? (
+            <img onClick={() => setIsLanguageMenuOpen((prev) => !prev)} 
+            className="w-12 cursor-pointer select-none" src={selectedLanguage.flag} alt="" />
+          ) : (
+            <Languages
+              onClick={() => setIsLanguageMenuOpen((prev) => !prev)}
+              className={`shrink-0 h-12 w-12 px-3 rounded-full cursor-pointer
+              ${
+                selectedLanguage
+                  ? "bg-violet-500 text-white"
+                  : "bg-gray-200 text-zinc-700 dark:text-gray-100 dark:bg-zinc-900/50"
+              }`}
+            />
+          )}
 
           {isLanguageMenuOpen && (
             <div
-              className="absolute bottom-14 left-0
-              bg-white dark:bg-zinc-900
+              className="absolute dark:border-zinc-700 bottom-14 left-0
+              bg-gray-200 dark:bg-zinc-900
               shadow-lg rounded-xl
               flex flex-col gap-2 z-50"
             >
@@ -245,7 +249,7 @@ export default function UserChat({ user, selectedUser }: UserChatProps) {
               relative w-full h-12 flex-1 pl-4 pr-12
               bg-gray-200 text-zinc-800
               dark:text-white dark:bg-zinc-900/50
-              rounded-full focus:outline-none focus:ring-0
+              rounded-xl focus:outline-none focus:ring-0
               ${isSending ? "opacity-60" : ""}
             `}
           />
