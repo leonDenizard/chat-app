@@ -9,18 +9,18 @@ type TranslationCache = {
 };
 
 export function useChatTranslation() {
-  // Cache local: messageId -> lang -> texto traduzido
+
   const cacheRef = useRef<TranslationCache>({});
 
-  // Controle de idioma
+
   const [isTranslateEnabled, setIsTranslateEnabled] = useState(false);
   const [selectedLanguage, setSelectedLanguage] =
     useState<LanguageOption | null>(null);
 
-  // Trava lógica (não causa re-render)
+ 
   const isTranslatingRef = useRef<Set<string>>(new Set());
 
-  // Estado reativo para UI (loader, shimmer etc)
+
   const [translatingIds, setTranslatingIds] = useState<Set<string>>(new Set());
 
   const enableTranslation = (lang: LanguageOption) => {
@@ -48,11 +48,11 @@ export function useChatTranslation() {
 
       const lang = selectedLanguage.code;
 
-      // Já traduzido → cache
+
       const cached = cacheRef.current[messageId]?.[lang];
       if (cached) return cached;
 
-      // Já em tradução → não duplica
+
       if (isTranslatingRef.current.has(messageId)) return null;
 
       startTranslating(messageId);
