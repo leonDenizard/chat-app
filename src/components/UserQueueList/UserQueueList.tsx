@@ -4,6 +4,7 @@ import { getRandomAvatar } from "@/utils/avatarUtils";
 import { RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import UnreadBadge from "./UnreadBadge";
+import { useMemo } from "react";
 
 interface QueueUser {
   id: string;
@@ -31,6 +32,32 @@ export default function UserQueueList({
 
   const { users, isLoading, error, refreshUsers } = useQueue();
 
+  const lastActiveUserId = useMemo(() => {
+    if (!lastMessages) return null;
+
+    return Object.entries(lastMessages).sort(
+      ([, a], [, b]) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )[0]?.[0];
+  }, [lastMessages]);
+
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+
+      if (a.id === user?.id) return -1;
+      if (b.id === user?.id) return 1;
+
+
+      if (a.id === lastActiveUserId) return -1;
+      if (b.id === lastActiveUserId) return 1;
+
+      const aTime = new Date(lastMessages?.[a.id]?.created_at ?? 0).getTime();
+      const bTime = new Date(lastMessages?.[b.id]?.created_at ?? 0).getTime();
+
+      return bTime - aTime;
+    });
+  }, [users, user?.id, lastMessages, lastActiveUserId]);
+
   if (isLoading) {
     return (
       <section className="p-4">
@@ -38,12 +65,6 @@ export default function UserQueueList({
       </section>
     );
   }
-
-  const sortedUsers = [...users].sort((a, b) => {
-    if (a.id === user?.id) return -1;
-    if (b.id === user?.id) return 1;
-    return 0;
-  });
 
   if (error) {
     return (
